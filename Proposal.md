@@ -31,3 +31,38 @@ Automated calendar integrations: Dates entered manually for now
 Photo sharing: No social feature for photo sharing 
 
 **AI feature - Primary AI feature will be an itinerary generator. Users can choose to manually work on the itinerary or have AI generate an initial itinerary based on the trip participants’ interests and preferences along with the general trip description (e.g., a relaxing 4 day girl’s trip in Montreal with great food and vintage shopping). Users can then view the recommended itinerary, comment on any changes, or manually edit the entries. 
+
+
+**Option #3 News Explorer
+
+**Tagline - Personalized news feed that pulls from the sources you trust, for the news that matters to you
+
+**Major user journeys
+
+New user: I sign up and choose my interests from a list of topics (Business, Travel, Entertainment, Tech, etc.), with optional sub-topics (e.g., Fintech, Airlines). I land on my feed straight away, already filled with recent articles.
+
+Reader: I log in and see today’s feed grouped by interest. Each card shows the headline, source, publish time, a 2-line AI summary and a link to the original. I can save an article, dismiss it, mark “more like this/less like this”, and the feed adjusts and becomes more personalized over time.
+
+Friend system: I add a friend by username and can see their news feed (if they allow access). I can also open a comparison page that shows a match score (how similar our feeds are), the interests we share, and where we differ most.
+
+Admin: I manage the list of news sources (add or disable feeds), and view previous articles I've read.
+
+**Core features
+Article ingestion: a background job pulls the latest articles every hour from a curated list of 20–30 RSS feeds (Reuters, BBC, FT, etc.) and removes duplicates based on a preset user priority.
+
+Interest profile and feed: alows users to pick topics, then get a ranked, filterable feed with save and dismiss actions.
+
+Saved articles: a reading list users can come back to.
+
+Feed sharing with friends/comparison: allow users to follow friends and see a match score based on topic weights and reading history, plus the topics they share.
+
+AI tagging and summaries: refer to below.
+
+Skip for now:
+Free-form web scraping (RSS only; users can’t add arbitrary sites)
+Paywalled content or showing full article text (link out to the original)
+Comments, likes and social feed
+Email digests and push notifications
+Mobile app (responsive web app only)
+**AI feature
+An LLM will be used to process every new article to (a) ensure topic grouping is consistent across sources, (b) de-duplicate articles shared across multiple sources, (c) classify and summarize articles (i.e., provide the 2-line summary, rank articles based on importance) and (d) manage the friend taste-matching functionality.
