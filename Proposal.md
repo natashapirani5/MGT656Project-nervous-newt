@@ -2,43 +2,45 @@
 
 #### 1. Tagline
 
-"Letterboxd for everything you watch: one log for your streaming, movies, and live shows, plus a 'where have I seen them before?' button."
+"Letterboxd that fills itself in: connect your streaming and ticketing accounts to get one log of everything you've watched, plus a 'where have I seen them before?' button."
 
 #### 2. Major user journeys
 
-- **Viewer (logging):** I log in and land on my timeline. I tap "+ Log," search for a title (a show, a movie, or a Broadway or theater performance), pick where I watched it (Netflix, Max, a theater, a live venue), and add a date, a rating, and an optional note. It shows up on my timeline and updates my stats.
-- **Viewer ("where have I seen them?"):** I'm halfway through a show and don't recognize an actor. I search their name or pick them from the cast list. The app shows their filmography with the titles I've already logged highlighted, so I can see "Oh, she was in that play I saw last spring!"
-- **Viewer (recommendations):** I open "For You" and get a short list of picks with a one-line reason for each ("because you rated *Past Lives* 5★ and love slow-burn romance"). I can save one to my watchlist or dismiss it.
-- **Friend (matching):** I add a friend by username. I open their profile and see a taste-match score, the titles we've both seen, where our ratings disagree most, and suggestions for something to watch together.
-- **Admin:** I log in to a dashboard where I can merge duplicate titles, review user-submitted live performances that aren't in the movie database, and handle reported content.
+- **Viewer (onboarding and logging):** When I sign up, I connect my accounts: streaming services (Netflix, Max, Disney+, Hulu) and ticketing services (Ticketmaster, TodayTix, Fandango). The app imports my watch history and past tickets onto my timeline, tagged by platform or venue, and keeps syncing new activity. Anything it misses, like a movie at a friend's house or a community theater show, I add manually with "+ Log." I can rate or annotate any imported item afterward.
+- **Viewer ("where have I seen them?"):** I'm watching something and an actor looks familiar, but I can't remember where I've seen them. I tap their name in the cast list or search for them. The app shows their filmography with the titles I've already watched or attended highlighted, plus when and where I saw each one: "Oh, she was in that play I saw last spring at Yale Rep!"
+- **Viewer (recommendations):** I open "For You" and get picks across streaming, movies, and upcoming live shows. Each comes with a one-line reason drawn from my full history, and streaming picks show which of my connected platforms carries the title. I can save a pick to my watchlist or dismiss it.
+- **Friend (matching):** I add a friend by username. Because both of our histories are imported, I see a taste-match score, titles and shows we've both seen (even "you were at the same concert"), where our ratings disagree most, and suggestions to watch together on platforms we both subscribe to.
+- **Admin:** I log in to a dashboard where I can watch the health of each connection (failed syncs, broken parsers), fix imported items that matched the wrong title, merge duplicates, and review manually added live performances.
 
 #### 3. Core features (MVP)
 
 *Build:*
 
-1. **Unified viewing log:** manual logging of movies, TV shows, and live performances, with platform or venue tags, using the TMDB API for movie and TV data plus a simple form for live shows.
-2. **Actor lookup:** a cast and filmography page that cross-references your log.
-3. **Personal profile and stats:** timeline, ratings, and breakdowns by platform and genre.
-4. **Friends and taste match:** follow friends, see a compatibility score and overlapping titles.
-5. **AI recommendations:** see section 4.
+1. **Account connections and auto-import:** Netflix viewing-history upload, plus Gmail receipt parsing for ticketing and streaming purchase or rental confirmations. Titles are matched against TMDB for movies and TV, and against parsed event details for live shows.
+2. **Unified timeline with manual fallback:** imported and manual entries live side by side, and you can rate, annotate, or correct any entry.
+3. **Actor lookup:** a cast and filmography page cross-referenced with your history, showing when and where you saw each title.
+4. **Friends and taste match:** follow friends, see a compatibility score, overlapping titles, and shared platforms.
+5. **AI recommendations and import cleanup:** see section 4.
 
 *Skip for now:*
 
-- Automatic import from streaming platforms (most have no public API; at most, offer CSV upload for Netflix history later)
-- A full live-theater database (let users add performances manually)
+- Direct integration with every platform (start with 1–2 sources and add the rest later)
+- A browser extension for real-time tracking
+- A full live-theater database (rely on ticket data plus manual entries)
 - Social feed, comments, and likes
 - Mobile app (start with a responsive web app)
 - Face recognition for actors
 
 #### 4. AI feature
 
-An LLM reads your viewing log, ratings, and notes, then:
+An LLM works across your imported and manual history to:
 
-- **Explains its recommendations:** it suggests 5 titles across movies, TV, and live shows, each with a short reason tied to your history, instead of opaque "you might like" lists.
-- **Writes a taste-match summary with a friend:** "You both love A24 horror and Phoebe Waller-Bridge, but Sam rates musicals way higher. Try *The Bear* together this weekend."
-- **Adds context to actor lookups (optional):** "You've seen Paul Mescal in 3 things, most recently *Gladiator II*. He's known for intense dramatic roles."
+- **Clean up imports:** turn messy receipts and history rows ("TodayTix Order #4821 – HADESTOWN 7:30PM") into structured entries with title, venue, date, and type. It also matches each entry to the right title and flags ones it isn't sure about so you can confirm them.
+- **Explain its recommendations:** it suggests titles across streaming, movies, and upcoming live shows, each with a reason tied to your history and noting which of your platforms carries it.
+- **Write a taste-match summary with a friend:** "You both binge prestige dramas and saw *Hadestown* within a month of each other. Try *Shōgun* together; you both have Hulu."
+- **Add a memory jog to actor lookups (optional):** "You've seen this actor 3 times, most recently in *Gladiator II* at AMC in March."
 
-The recommendation and friend-match feature is the strongest core AI feature, since it uses data only your app has: cross-platform history plus live shows.
+The import cleanup is now the most essential AI feature, because without it the auto-import can't produce a usable log. Recommendations and friend matching remain the user-facing highlight.
 
 ---
 
