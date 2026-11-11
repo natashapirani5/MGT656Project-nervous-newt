@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}My trips{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Upcoming trips</h1>
+{% if trips %}
+<div class="row g-3">
+  {% for trip in trips %}
+  <div class="col-12 col-md-6 col-lg-4">
+    <div class="card h-100 shadow-sm"><div class="card-body">
+      <h2 class="h5 card-title"><a href="{% url 'trip_detail' trip.pk %}">{{ trip.destination }}</a></h2>
+      <p class="card-text text-muted small mb-1">
+        {% if trip.start_date %}{{ trip.start_date|date:"M j" }}&ndash;{{ trip.end_date|date:"M j, Y" }}{% else %}Dates TBD{% endif %}
+      </p>
+      <p class="card-text small mb-0">Organized by {{ trip.organizer.first_name|default:trip.organizer.username }}</p>
+    </div></div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">No upcoming trips yet.</p>
+{% endif %}
+{% endblock %}

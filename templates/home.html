@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-4 p-md-5 bg-white rounded shadow-sm">
+  <h1 class="display-6">Plan trips together</h1>
+  <p class="lead">Coordinate availability and preferences with friends, then build a day-by-day itinerary as a group.</p>
+  {% if user.is_authenticated %}
+    <a class="btn btn-primary" href="{% url 'dashboard' %}">Go to my trips</a>
+  {% else %}
+    <a class="btn btn-primary" href="{% url 'signup' %}">Sign up</a>
+    <a class="btn btn-outline-primary" href="{% url 'login' %}">Log in</a>
+  {% endif %}
+</div>
+{% endblock %}

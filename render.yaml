@@ -1,0 +1,43 @@
+# Render Blueprint. Two web services from the same repo:
+#  - staging auto-deploys on every merge to main
+#  - production deploys only when someone clicks "Manual Deploy" (deliberate promote)
+# Each points at its own Neon database via DATABASE_URL (set in the Render dashboard).
+services:
+  - type: web
+    name: travel-planner-staging
+    runtime: python
+    plan: free
+    branch: main
+    autoDeploy: true
+    buildCommand: ./build.sh
+    preDeployCommand: python manage.py migrate --no-input && python manage.py seed
+    startCommand: gunicorn config.wsgi --bind 0.0.0.0:$PORT --log-file -
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+  - type: web
+    name: travel-planner-production
+    runtime: python
+    plan: free
+    branch: main
+    autoDeploy: false
+    buildCommand: ./build.sh
+    preDeployCommand: python manage.py migrate --no-input && python manage.py seed
+    startCommand: gunicorn config.wsgi --bind 0.0.0.0:$PORT --log-file -
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false

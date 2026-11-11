@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ trip.destination }}{% endblock %}
+{% block content %}
+<h1 class="h3">{{ trip.destination }}</h1>
+<p class="text-muted">
+  {% if trip.start_date %}{{ trip.start_date|date:"M j" }}&ndash;{{ trip.end_date|date:"M j, Y" }}{% else %}Dates TBD{% endif %}
+  {% if trip.budget %} &middot; Budget ${{ trip.budget|floatformat:0 }}{% endif %}
+  {% if is_organizer %} &middot; <span class="badge text-bg-primary">You're the organizer</span>{% endif %}
+</p>
+<p>{{ trip.description }}</p>
+<div class="row g-4">
+  <div class="col-lg-8">
+    <h2 class="h5">Itinerary</h2>
+    {% for day, items in days %}
+      <div class="card mb-3 shadow-sm">
+        <div class="card-header fw-semibold">{{ day|date:"l, M j" }}</div>
+        <ul class="list-group list-group-flush">
+          {% for item in items %}
+          <li class="list-group-item">
+            <span class="text-muted me-2">{{ item.time|time:"g:i A"|default:"—" }}</span>
+            <strong>{{ item.title }}</strong>
+            {% if item.location %}<span class="text-muted"> &middot; {{ item.location }}</span>{% endif %}
+            {% if item.status == "proposed" %}<span class="badge text-bg-warning ms-1">proposed</span>{% endif %}
+            {% if item.notes %}<div class="small">{{ item.notes }}</div>{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% empty %}
+      <p class="text-muted">No itinerary items yet.</p>
+    {% endfor %}
+  </div>
+  <div class="col-lg-4">
+    <h2 class="h5">Who's going</h2>
+    <ul class="list-group shadow-sm">
+      {% for m in memberships %}
+      <li class="list-group-item d-flex justify-content-between align-items-start">
+        <div>
+          {{ m.user.first_name|default:m.user.username }}
+          <div class="small text-muted">{{ m.get_role_display }}{% if m.rsvp_condition %} &middot; {{ m.rsvp_condition }}{% endif %}</div>
+        </div>
+        <span class="badge text-bg-secondary">{{ m.get_rsvp_display }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
