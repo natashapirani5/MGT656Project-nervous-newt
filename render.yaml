@@ -10,8 +10,7 @@ services:
     branch: main
     autoDeploy: true
     buildCommand: ./build.sh
-    preDeployCommand: python manage.py migrate --no-input && python manage.py seed
-    startCommand: gunicorn config.wsgi --bind 0.0.0.0:$PORT --log-file -
+    startCommand: python manage.py migrate --no-input && python manage.py seed && gunicorn config.wsgi --bind 0.0.0.0:$PORT --log-file -
     healthCheckPath: /healthz
     envVars:
       - key: PYTHON_VERSION
@@ -29,8 +28,7 @@ services:
     branch: main
     autoDeploy: false
     buildCommand: ./build.sh
-    preDeployCommand: python manage.py migrate --no-input && python manage.py seed
-    startCommand: gunicorn config.wsgi --bind 0.0.0.0:$PORT --log-file -
+    startCommand: python manage.py migrate --no-input && python manage.py seed && gunicorn config.wsgi --bind 0.0.0.0:$PORT --log-file -
     healthCheckPath: /healthz
     envVars:
       - key: PYTHON_VERSION
