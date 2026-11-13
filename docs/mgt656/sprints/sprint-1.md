@@ -46,13 +46,12 @@ It was really interesting to work with agents in a team setting. Right from the 
 
 ## Backlog changes for next sprint
 
-<!-- TODO(Sean): replace the placeholders below once the #2 stories are created, then delete this comment. -->
 Feature stories for the core features were written in [#2](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/2) and placed in
 Sprints 2–4 on the project board:
 
-- **Sprint 2:** <#__ story title>, <#__ story title>, ...
-- **Sprint 3:** <#__ story title>, <#__ story title>, ...
-- **Sprint 4:** <#__ story title>, <#__ story title>, ...
-- Larger stories split into sub-issues: <#__ (itinerary) → #__, #__; #__ (AI) → #__, #__>
+- **Sprint 2:** #13 Production site and safe deploys, #14 Friend directory, #15 Create a trip and invite friends
+- **Sprint 3:** #16 Availability and RSVP, #17 Collaborative itinerary, #20 Generate an itinerary with AI
+- **Sprint 4:** #18 Dashboard: what needs my attention, #19 View a friend's travel profile, #21 Live updates without page reloads, #22 A/B test bot run readiness
+- Larger stories split into sub-issues: #14 (friends) → #23, #24, #25; #17 (itinerary) → #26, #27, #28; #20 (AI) → #29, #30, #31
 
 Sprint 2 also adds a public production URL (required from Nov 18).
