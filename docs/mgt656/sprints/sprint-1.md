@@ -14,7 +14,7 @@
 **Merged PRs**
 
 - [#1 Sprint 1 walking skeleton: auth, trips, A/B page, seed, CI](https://github.com/natashapirani5/MGT656Project-nervous-newt/pull/1)
-- [#<DOCS_PR> Sprint 1 docs](https://github.com/natashapirani5/MGT656Project-nervous-newt/pull/<DOCS_PR>) <!-- this PR; fill in the number once opened -->
+- [#11 Sprint 1 docs: sprint report, CI link, staging URL](https://github.com/natashapirani5/MGT656Project-nervous-newt/pull/11)
 
 **Sprint 1 issues** ([project board](https://github.com/users/natashapirani5/projects/2), Sprint 1 iteration)
 
