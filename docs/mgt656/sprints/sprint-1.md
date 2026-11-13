@@ -38,8 +38,8 @@ Staging: <STAGING_URL>  <!-- from #4 -->
 
 ## Working with agents
 
-TODO(team): one concrete thing that worked or didn't, and what we changed.
-**Written by the team, not drafted by AI.**
+It was really interesting to work with agents in a team setting. Right from the start, our team had the urge to vibe code the skeleton but quickly realized how disorganized it could get with a larger project where everyone is contributing. We then spent time making sure Claude Code is connected to our Github repository, and that we are pointing the agents to the same context via an agent-readme file. Once we created a project with issues, assigned members to each issue, we were able to individually work with our agents in a much more effective and organized manner to create new branches, edit files, look over pull requests, and in general progress toward the end goal.  
+
 
 ## Backlog changes for next sprint
 
