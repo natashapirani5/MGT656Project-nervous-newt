@@ -16,18 +16,15 @@
 - [#1 Sprint 1 walking skeleton: auth, trips, A/B page, seed, CI](https://github.com/natashapirani5/MGT656Project-nervous-newt/pull/1)
 - [#<DOCS_PR> Sprint 1 docs](https://github.com/natashapirani5/MGT656Project-nervous-newt/pull/<DOCS_PR>) <!-- this PR; fill in the number once opened -->
 
-**Sprint 1 issues**
+**Sprint 1 issues** ([project board](https://github.com/users/natashapirani5/projects/2), Sprint 1 iteration)
 
-<!-- UPDATE BEFORE MERGE: drop "(open)" once each issue is closed. -->
-- [#2 Setup product backlog for future sprints](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/2) (open)
 - [#3 Setup Sprint 1 stories](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/3)
 - [#4 Staging deployment](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/4)
-- [#5 Complete docs and submit](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/5) (closed by this PR)
-- [#6 Sign up, log in, and set up a travel profile](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/6) (open)
-- [#7 Seed demo data and grader accounts](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/7) (open)
-- [#8 A/B test page and stats](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/8) (open)
-- [#9 Automated tests and lint on every pull request](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/9) (open; branch protection on `main` not enabled yet)
-- [#10 Public staging site](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/10) (open)
+- [#6 Sign up, log in, and set up a travel profile](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/6)
+- [#7 Seed demo data and grader accounts](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/7)
+- [#8 A/B test page and stats](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/8)
+- [#9 Automated tests and lint on every pull request](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/9)
+- [#10 Public staging site](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/10)
 
 ## What works on staging now
 
@@ -49,7 +46,13 @@ It was really interesting to work with agents in a team setting. Right from the 
 
 ## Backlog changes for next sprint
 
-- Feature stories (profiles, friend directory, group trips and invites, availability and
-  RSVP, collaborative itinerary, trips dashboard, AI itinerary generation) are being written
-  in [#2](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/2) and will go into Sprints 2–4 on the project board.
-- Sprint 2 adds a public production URL (required from Nov 18).
+<!-- TODO(Sean): replace the placeholders below once the #2 stories are created, then delete this comment. -->
+Feature stories for the core features were written in [#2](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/2) and placed in
+Sprints 2–4 on the project board:
+
+- **Sprint 2:** <#__ story title>, <#__ story title>, ...
+- **Sprint 3:** <#__ story title>, <#__ story title>, ...
+- **Sprint 4:** <#__ story title>, <#__ story title>, ...
+- Larger stories split into sub-issues: <#__ (itinerary) → #__, #__; #__ (AI) → #__, #__>
+
+Sprint 2 also adds a public production URL (required from Nov 18).
