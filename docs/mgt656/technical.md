@@ -10,11 +10,13 @@ live updates with htmx. Each section is filled in when the item ships.
   `main`; production (`autoDeploy: false`) is promoted by a manual deploy.
 - **Files:** `.github/workflows/ci.yml`, `render.yaml`, `build.sh`
 - **PRs:** [#1](https://github.com/natashapirani5/MGT656Project-nervous-newt/pull/1)
-  (workflow, Render blueprint)
+  (workflow, Render blueprint);
+  [passing CI run on PR #1](https://github.com/natashapirani5/MGT656Project-nervous-newt/actions/runs/43359647484)
 - **See it working:** the "CI" check on any pull request
   ([Actions tab](https://github.com/natashapirani5/MGT656Project-nervous-newt/actions));
   merging to `main` triggers a staging deploy on Render.
-- **Branch protection:** <CONFIRM: "`main` requires the CI check to pass before merging" — or keep as TODO if not enabled>
+- **TODO:** enable branch protection on `main` so merging requires the CI check to pass
+  (not enabled as of Nov 13).
 
 ## 2. Structured LLM output + per-user AI limit (planned)
 

@@ -16,39 +16,40 @@
 - [#1 Sprint 1 walking skeleton: auth, trips, A/B page, seed, CI](https://github.com/natashapirani5/MGT656Project-nervous-newt/pull/1)
 - [#<DOCS_PR> Sprint 1 docs](https://github.com/natashapirani5/MGT656Project-nervous-newt/pull/<DOCS_PR>) <!-- this PR; fill in the number once opened -->
 
-**Closed issues**
+**Sprint 1 issues**
 
-- [#2 Setup product backlog for future sprints](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/2)
+<!-- UPDATE BEFORE MERGE: drop "(open)" once each issue is closed. -->
+- [#2 Setup product backlog for future sprints](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/2) (open)
 - [#3 Setup Sprint 1 stories](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/3)
 - [#4 Staging deployment](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/4)
-- [#5 Complete docs and submit](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/5)
-
-<!-- CHECK BEFORE MERGE: remove any issue above that is not actually closed. -->
+- [#5 Complete docs and submit](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/5) (closed by this PR)
+- [#6 Sign up, log in, and set up a travel profile](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/6) (open)
+- [#7 Seed demo data and grader accounts](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/7) (open)
+- [#8 A/B test page and stats](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/8) (open)
+- [#9 Automated tests and lint on every pull request](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/9) (open; branch protection on `main` not enabled yet)
+- [#10 Public staging site](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/10) (open)
 
 ## What works on staging now
 
-Staging: <STAGING_URL>  <!-- from #4 -->
+Staging: https://travel-planner-staging-9e6n.onrender.com
 
-<!-- Tick only what was checked by hand on staging; leave the rest unticked and mention it in the grader notes. -->
-- [ ] Log in with the organizer account (`admin@example.com`)
-- [ ] Log in with the participant account (`member@example.com`)
-- [ ] `/1ead64a` loads, and the variant stays the same on reload
-- [ ] Clicking the button updates `/1ead64a/stats`
-- [ ] Migrations and seed ran on deploy
+Checked on staging on Nov 13, 2026:
+
+- [x] `/healthz` returns `{"status": "ok"}`
+- [x] Log in with the organizer account (`admin@example.com`) and see the seeded Montreal trip on `/trips/`
+- [x] Log in with the participant account (`member@example.com`) and see the same trip
+- [x] `/1ead64a` loads with no login, lists all four nicknames, and has one `kudos`/`thanks` button
+- [x] The variant stays the same on reload
+- [x] Clicking the button updates `/1ead64a/stats`
+- [x] Migrations and seed ran on deploy (grader accounts and seeded trip exist)
 
 ## Working with agents
 
-It was really interesting to work with agents in a team setting. Right from the start, our team had the urge to vibe code the skeleton but quickly realized how disorganized it could get with a larger project where everyone is contributing. We then spent time making sure Claude Code is connected to our Github repository, and that we are pointing the agents to the same context via an agent-readme file. Once we created a project with issues, assigned members to each issue, we were able to individually work with our agents in a much more effective and organized manner to create new branches, edit files, look over pull requests, and in general progress toward the end goal.  
-
+It was really interesting to work with agents in a team setting. Right from the start, our team had the urge to vibe code the skeleton but quickly realized how disorganized it could get with a larger project where everyone is contributing. We then spent time making sure Claude Code is connected to our Github repository, and that we are pointing the agents to the same context via an agent-readme file. Once we created a project with issues, assigned members to each issue, we were able to individually work with our agents in a much more effective and organized manner to create new branches, edit files, look over pull requests, and in general progress toward the end goal.
 
 ## Backlog changes for next sprint
 
-TODO(team): confirm against the project board once #2 lands. Known so far:
-
-- User stories #6–#10 (accounts, seed, A/B page, CI, staging site) were not in this
-  sprint's scope and move to Sprint 2. <CONFIRM with team>
-- Feature stories from [#2](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/2)
-  (profiles, friend directory, group trips and invites, availability and RSVP, collaborative
-  itinerary, trips dashboard, AI itinerary generation) go into Sprints 2–4.
-- Sprint 2 also needs a public production URL (required from Nov 18).
-- <any Sprint 1 item not finished, e.g. branch protection on `main`, moves to Sprint 2>
+- Feature stories (profiles, friend directory, group trips and invites, availability and
+  RSVP, collaborative itinerary, trips dashboard, AI itinerary generation) are being written
+  in [#2](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/2) and will go into Sprints 2–4 on the project board.
+- Sprint 2 adds a public production URL (required from Nov 18).
