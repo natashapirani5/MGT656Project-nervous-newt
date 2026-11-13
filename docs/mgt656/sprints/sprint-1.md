@@ -46,12 +46,28 @@ It was really interesting to work with agents in a team setting. Right from the 
 
 ## Backlog changes for next sprint
 
-Feature stories for the core features were written in [#2](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/2) and placed in
-Sprints 2–4 on the project board:
+Feature stories for the core features were written in [#2 Setup product backlog for future sprints](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/2) and placed in Sprints 2–4 on the project board:
 
-- **Sprint 2:** #13 Production site and safe deploys, #14 Friend directory, #15 Create a trip and invite friends
-- **Sprint 3:** #16 Availability and RSVP, #17 Collaborative itinerary, #20 Generate an itinerary with AI
-- **Sprint 4:** #18 Dashboard: what needs my attention, #19 View a friend's travel profile, #21 Live updates without page reloads, #22 A/B test bot run readiness
-- Larger stories split into sub-issues: #14 (friends) → #23, #24, #25; #17 (itinerary) → #26, #27, #28; #20 (AI) → #29, #30, #31
+- **Sprint 2:**
+  - [#13 Production site and safe deploys](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/13)
+  - [#14 Friend directory](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/14)
+  - [#15 Create a trip and invite friends](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/15)
+- **Sprint 3:**
+  - [#16 Respond to an invite: availability and RSVP](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/16)
+  - [#17 Collaborative itinerary](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/17)
+  - [#20 Generate an itinerary with AI](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/20)
+- **Sprint 4:**
+  - [#18 Dashboard: see what needs my attention](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/18)
+  - [#19 View a friend's travel profile](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/19)
+  - [#21 Live updates without page reloads](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/21)
+  - [#22 A/B test bot run readiness](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/22)
+
+Larger stories are split into sub-issues:
+
+- [#14 Friend directory](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/14) → [#23](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/23), [#24](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/24), [#25](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/25)
+- [#17 Collaborative itinerary](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/17) → [#26](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/26), [#27](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/27), [#28](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/28)
+- [#20 Generate an itinerary with AI](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/20) → [#29](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/29), [#30](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/30), [#31](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/31)
+
+Team tasks for each sprint's report and submission: [#32 Sprint 2](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/32), [#33 Sprint 3](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/33), [#34 Sprint 4](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/34), [#35 Retrospective and final submission](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/35).
 
 Sprint 2 also adds a public production URL (required from Nov 18).
