@@ -28,6 +28,8 @@ services:
     plan: free
     branch: main
     autoDeploy: false
+    DATABASE_URL: postgresql://neondb_owner:npg_xbq2nQdtZ3mp@ep-misty-hat-bdkxmfyj.c-8.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+    OPENROUTER_API_KEY: sk-or-placeholder
     buildCommand: ./build.sh
     preDeployCommand: python manage.py migrate --no-input && python manage.py seed
     startCommand: gunicorn config.wsgi --bind 0.0.0.0:$PORT --log-file -
