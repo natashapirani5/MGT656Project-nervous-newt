@@ -10,7 +10,7 @@ ab_hash: 1ead64a             # A/B page is /1ead64a, stats at /1ead64a/stats
 framework: django
 database: postgres
 hosting: Render (web service) + Neon (Postgres; separate DB/branch for staging and production)
-staging_url: TODO
+staging_url: https://travel-planner-staging-9e6n.onrender.com
 production_url: TODO
 app_summary: >
   Travel Planner: a collaborative trip-planning site where groups coordinate
