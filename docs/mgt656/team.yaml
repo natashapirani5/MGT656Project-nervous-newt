@@ -1,0 +1,11 @@
+framework: django
+database: postgres
+members:
+  - nickname: crowded-dolphin
+    github: natashapirani5
+  - nickname: cautious-crow
+    github: seanng0
+  - nickname: lively-octopus
+    github: vicschen
+  - nickname: busy-magpie
+    github: bekluoo
