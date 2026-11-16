@@ -2,6 +2,8 @@ import re
 
 from django import forms
 
+from friends.models import friends_of
+
 from .models import Trip
 
 WISHLIST_DATALIST_ID = "wishlist-destinations"
@@ -59,3 +61,21 @@ class TripForm(forms.ModelForm):
         if start and end and end < start:
             self.add_error("end_date", "The end date can't be before the start date.")
         return cleaned
+
+
+class InviteForm(forms.Form):
+    """Pick friends to invite. Only the organizer's accepted friends are valid choices."""
+
+    friends = forms.ModelMultipleChoiceField(
+        queryset=None,
+        widget=forms.CheckboxSelectMultiple,
+        error_messages={
+            "required": "Pick at least one friend to invite.",
+            "invalid_choice": "You can only invite your friends.",
+            "invalid_pk_value": "You can only invite your friends.",
+        },
+    )
+
+    def __init__(self, *args, organizer, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["friends"].queryset = friends_of(organizer)

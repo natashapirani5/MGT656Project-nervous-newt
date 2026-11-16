@@ -240,7 +240,8 @@ class SeedFriendsTests(TestCase):
         admin = User.objects.get(username="admin@example.com")
         member = User.objects.get(username="member@example.com")
         self.assertTrue(are_friends(admin, member))
-        self.assertEqual(Friendship.objects.count(), 3)
+        self.assertTrue(are_friends(admin, User.objects.get(username="jordan.lee@example.com")))
+        self.assertEqual(Friendship.objects.count(), 4)
         self.assertEqual(Friendship.objects.filter(to_user=admin, status="pending").count(), 1)
         self.assertEqual(Friendship.objects.filter(to_user=member, status="pending").count(), 1)
 
@@ -249,7 +250,7 @@ class SeedFriendsTests(TestCase):
         admin = User.objects.get(username="admin@example.com")
         Friendship.objects.filter(to_user=admin, status="pending").update(status="accepted")
         call_command("seed", stdout=StringIO())
-        self.assertEqual(friends_of(admin).count(), 2)
+        self.assertEqual(friends_of(admin).count(), 3)  # member, Jordan, and Sam
 
     def test_demo_travelers_cannot_log_in(self):
         call_command("seed", stdout=StringIO())
