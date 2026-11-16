@@ -17,6 +17,7 @@
       <ul class="navbar-nav ms-auto">
         {% if user.is_authenticated %}
           <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">My trips</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'friends' %}">Friends</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">Profile</a></li>
           <li class="nav-item">
             <form method="post" action="{% url 'logout' %}">{% csrf_token %}

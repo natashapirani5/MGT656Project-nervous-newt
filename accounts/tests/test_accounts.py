@@ -71,7 +71,7 @@ class SeedCommandTests(TestCase):
     def test_seed_is_idempotent(self):
         call_command("seed", stdout=StringIO())
         call_command("seed", stdout=StringIO())
-        self.assertEqual(User.objects.count(), 2)
+        self.assertEqual(User.objects.count(), 5)
         self.assertEqual(Trip.objects.count(), 1)
         self.assertEqual(Membership.objects.count(), 2)
         self.assertEqual(ItineraryItem.objects.count(), 5)

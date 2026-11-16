@@ -16,6 +16,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from accounts.models import Profile
+from friends.models import Friendship
 from trips.models import ItineraryItem, Membership, Trip
 
 ORGANIZER_EMAIL = "admin@example.com"
@@ -23,6 +24,13 @@ PARTICIPANT_EMAIL = "member@example.com"
 DEFAULT_ORGANIZER_PASSWORD = "Grader-Organizer-656"
 DEFAULT_PARTICIPANT_PASSWORD = "Grader-Member-656"
 SEED_TRIP_DESTINATION = "Montreal, Canada"
+
+# Demo travelers (no usable password; they exist so graders can search and get requests).
+DEMO_TRAVELERS = [
+    ("sam.rivera@example.com", "Sam Rivera", "Chicago, IL", "street food, cycling"),
+    ("priya.shah@example.com", "Priya Shah", "Austin, TX", "live music, hot springs"),
+    ("jordan.lee@example.com", "Jordan Lee", "Seattle, WA", "hiking, coffee"),
+]
 
 
 def upsert_user(email, password, name, profile_fields, is_staff=False):
@@ -117,4 +125,40 @@ class Command(BaseCommand):
                 },
             )
 
+        self.seed_friends(organizer, participant)
         self.stdout.write(self.style.SUCCESS("Seed data is in place."))
+
+    def seed_friends(self, organizer, participant):
+        demo = {}
+        for email, name, city, interests in DEMO_TRAVELERS:
+            user, created = User.objects.get_or_create(
+                username=email, defaults={"email": email, "first_name": name}
+            )
+            if created:
+                user.set_unusable_password()
+                user.save()
+            Profile.objects.update_or_create(
+                user=user,
+                defaults={"display_name": name, "home_city": city, "interests": interests},
+            )
+            demo[email] = user
+
+        # The two grader accounts are always friends.
+        row = Friendship.between(organizer, participant)
+        if row is None:
+            row = Friendship(from_user=organizer, to_user=participant)
+        if row.status != Friendship.Status.ACCEPTED:
+            row.status = Friendship.Status.ACCEPTED
+            row.accepted_at = timezone.now()
+            row.save()
+
+        # Pending requests graders can accept or decline. Only created when the pair has
+        # no relationship yet, so re-seeding never undoes what a grader did (except a
+        # declined request, which comes back so the feature can be tried again).
+        for sender_email, recipient in [
+            ("sam.rivera@example.com", organizer),
+            ("priya.shah@example.com", participant),
+        ]:
+            sender = demo[sender_email]
+            if Friendship.between(sender, recipient) is None:
+                Friendship.objects.create(from_user=sender, to_user=recipient)
