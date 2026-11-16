@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load friend_tags %}
+{% block title %}Friends{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Friends</h1>
+
+<form method="get" action="{% url 'friends' %}" class="mb-4" role="search">
+  <label for="friend-search" class="form-label">Find travelers by name or email</label>
+  <div class="input-group">
+    <input id="friend-search" type="search" name="q" value="{{ q }}" class="form-control" placeholder="e.g. Max or max@example.com">
+    <button class="btn btn-primary" type="submit">Search</button>
+  </div>
+</form>
+
+{% if results is not None %}
+<section class="mb-4" aria-labelledby="results-heading">
+  <h2 id="results-heading" class="h5">Search results</h2>
+  {% if results %}
+  <ul class="list-group shadow-sm">
+    {% for r in results %}
+    <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div>
+        <strong>{{ r.user|traveler_name }}</strong>
+        {% with city=r.user|home_city %}{% if city %}<div class="small text-muted">{{ city }}</div>{% endif %}{% endwith %}
+      </div>
+      {% if r.state == "friends" %}
+        <span class="badge text-bg-success">Friends</span>
+      {% elif r.state == "sent" %}
+        <span class="badge text-bg-secondary">Request sent</span>
+      {% elif r.state == "received" %}
+        <span class="badge text-bg-info">Sent you a request</span>
+      {% else %}
+        <form method="post" action="{% url 'friend_request_send' r.user.pk %}">{% csrf_token %}
+          <input type="hidden" name="q" value="{{ q }}">
+          <button class="btn btn-sm btn-outline-primary" type="submit">Add friend</button>
+        </form>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-muted">No travelers found</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<div class="row g-4">
+  <section class="col-lg-6" aria-labelledby="requests-heading">
+    <h2 id="requests-heading" class="h5">Friend requests</h2>
+    {% if incoming %}
+    <ul class="list-group shadow-sm mb-3">
+      {% for fr in incoming %}
+      <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+          <strong>{{ fr.from_user|traveler_name }}</strong>
+          {% with city=fr.from_user|home_city %}{% if city %}<div class="small text-muted">{{ city }}</div>{% endif %}{% endwith %}
+        </div>
+        <div class="d-flex gap-2">
+          <form method="post" action="{% url 'friend_request_accept' fr.pk %}">{% csrf_token %}
+            <button class="btn btn-sm btn-success" type="submit">Accept</button>
+          </form>
+          <form method="post" action="{% url 'friend_request_decline' fr.pk %}">{% csrf_token %}
+            <button class="btn btn-sm btn-outline-secondary" type="submit">Decline</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted">No pending requests.</p>
+    {% endif %}
+    {% if outgoing %}
+    <p class="small text-muted mb-1">Waiting for a reply:</p>
+    <ul class="list-unstyled small">
+      {% for fr in outgoing %}<li>{{ fr.to_user|traveler_name }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+
+  <section class="col-lg-6" aria-labelledby="friends-heading">
+    <h2 id="friends-heading" class="h5">My friends</h2>
+    {% if friends %}
+    <ul class="list-group shadow-sm">
+      {% for friend in friends %}
+      <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+          <strong>{{ friend|traveler_name }}</strong>
+          {% with city=friend|home_city %}{% if city %}<div class="small text-muted">{{ city }}</div>{% endif %}{% endwith %}
+        </div>
+        <form method="post" action="{% url 'friend_remove' friend.pk %}" onsubmit="return confirm('Remove this friend?');">{% csrf_token %}
+          <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button>
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted">No friends yet. Search above to add some.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
