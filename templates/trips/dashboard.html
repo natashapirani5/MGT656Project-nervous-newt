@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% block title %}My trips{% endblock %}
 {% block content %}
-<h1 class="h3 mb-3">Upcoming trips</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Upcoming trips</h1>
+  <a class="btn btn-primary" href="{% url 'trip_create' %}">New trip</a>
+</div>
 {% if trips %}
 <div class="row g-3">
   {% for trip in trips %}

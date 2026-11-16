@@ -162,3 +162,14 @@ class Command(BaseCommand):
             sender = demo[sender_email]
             if Friendship.between(sender, recipient) is None:
                 Friendship.objects.create(from_user=sender, to_user=recipient)
+
+        # A friend of the organizer who isn't on the seeded trip yet, so graders can try
+        # trip invites (#15) right away. Like above, only created if the pair has no row.
+        jordan = demo["jordan.lee@example.com"]
+        if Friendship.between(organizer, jordan) is None:
+            Friendship.objects.create(
+                from_user=organizer,
+                to_user=jordan,
+                status=Friendship.Status.ACCEPTED,
+                accepted_at=timezone.now(),
+            )
