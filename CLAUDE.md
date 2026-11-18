@@ -11,7 +11,7 @@ framework: django
 database: postgres
 hosting: Render (web service) + Neon (Postgres; separate DB/branch for staging and production)
 staging_url: https://travel-planner-staging-9e6n.onrender.com
-production_url: TODO
+production_url: https://travel-planner-production-1ad2.onrender.com
 app_summary: >
   Travel Planner: a collaborative trip-planning site where groups coordinate
   availability and preferences and build day-by-day itineraries together.
