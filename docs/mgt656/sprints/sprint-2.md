@@ -8,7 +8,7 @@
 - **Trips:** a "New trip" form at `/trips/new/` that suggests wishlist destinations and rejects an end date before the start date; the creator becomes the organizer; organizers can edit trip details
 - **Invites:** organizers can invite one or more friends from the trip page; invitees join with RSVP "Pending"; only friends can be invited, there are no duplicates, and participants who try get an error page
 - **Seed data:** the two grader accounts are friends, each has a pending friend request to try, and the organizer has a friend (Jordan Lee) who isn't on the Montreal trip yet, so invites can be tried right away
-- **Production and safe deploys:** `travel-planner-production` on Render with its own Neon database, the `/healthz` health check, and Auto-Deploy off; merging to `main` updates staging only; "CI" is a required check on `main`; release steps are in `docs/mgt656/technical.md`
+- **Production and safe deploys:** `travel-planner-production` on Render with its own Neon database, the `/healthz` health check, and Auto-Deploy off; merging to `main` updates staging only (staging auto-deploy restored in #40); "CI" is a required check on `main`; release steps and screenshots of both Events tabs are in `docs/mgt656/technical.md`
 
 **Merged PRs**
 
@@ -21,6 +21,7 @@
 - [#13 Production site and safe deploys](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/13)
 - [#14 Friend directory](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/14), with sub-issues [#23 search](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/23), [#24 friend requests](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/24), [#25 friends list](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/25)
 - [#15 Create a trip and invite friends](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/15)
+- [#40 Fix staging auto-deploy](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/40)
 
 ## What works on staging and production now
 
@@ -36,7 +37,7 @@ Checked on Nov 18, 2026:
 - [x] `/1ead64a` and `/1ead64a/stats` work on production
 - [x] Migrations and seed ran on the production deploy ("Seed data is in place.")
 - [x] Production only changes when someone clicks Manual Deploy
-- [ ] Staging auto-deploy on merge: **not working yet**; staging stopped deploying automatically after Nov 12 and was deployed by hand on Nov 18 (tracked in [#40](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/40))
+- [x] Staging auto-deploys on merge to `main`; this was broken after Nov 12 and fixed in [#40](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/40), with screenshots of both Events tabs saved in `docs/mgt656/sprints/img/` and linked from `docs/mgt656/technical.md`
 
 ## Working with agents
 
@@ -45,7 +46,7 @@ The agents worked well when given the full project context. They kept the overal
 ## Backlog changes for Sprint 3
 
 - All Sprint 2 stories (#13, #14, #15) were closed.
-- **New bug added to Sprint 3:** [#40 Fix staging auto-deploy (staging stopped updating after Nov 12)](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/40). Merges after Nov 12 (including #37, #38 and #39) didn't deploy to staging until we deployed it by hand on Nov 18. Until this is fixed, we can't show the "merging updates staging only" proof from #13. The plan is to check Render's build filters and the GitHub connection first, then fall back to a Render deploy hook called from CI after tests pass. Fixing it also completes the Events-tab screenshots for `technical.md`.
+- **Bug fixed during Sprint 2:** [#40 Fix staging auto-deploy](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/40) was found late in the sprint, when merges after Nov 12 (including #37, #38 and #39) didn't deploy to staging until we deployed by hand on Nov 18. It is now closed: staging auto-deploys on merge again, the Events-tab screenshots that prove "merging updates staging only" for #13 are in `technical.md`, and #40 is no longer on the Sprint 3 backlog.
 - **Sprint 3:**
   - [#16 Respond to an invite: availability and RSVP](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/16) (builds on the invites from #15)
   - [#17 Collaborative itinerary](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/17) → [#26](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/26), [#27](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/27), [#28](https://github.com/natashapirani5/MGT656Project-nervous-newt/issues/28)
