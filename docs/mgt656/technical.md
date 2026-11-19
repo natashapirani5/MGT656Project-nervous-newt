@@ -50,3 +50,6 @@ live updates with htmx. Each section is filled in when the item ships.
 - A/B page: every case required by the spec (`abtest/tests/test_abtest.py`).
 - External services (OpenRouter) will be mocked; tests run with no network and no keys.
 - Not yet tested: browser-level behavior (no Playwright yet).
+
+![Events tab – view 1](sprints/img/Issue40proof1.png)
+![Events tab – view 2](sprints/img/Issue40proof2.png)
