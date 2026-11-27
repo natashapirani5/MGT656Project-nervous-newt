@@ -22,4 +22,9 @@ urlpatterns = [
         views.propose_remove,
         name="propose_remove",
     ),
+    path(
+        "<int:pk>/items/<int:item_pk>/withdraw/",
+        views.proposal_withdraw,
+        name="proposal_withdraw",
+    ),
 ]

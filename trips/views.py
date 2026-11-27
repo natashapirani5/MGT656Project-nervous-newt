@@ -318,6 +318,21 @@ def propose_remove(request, pk, item_pk):
 
 @login_required
 @require_POST
+def proposal_withdraw(request, pk, item_pk):
+    """A participant takes back one of their own pending suggestions."""
+    trip = _get_member_trip(request, pk)
+    proposal = get_object_or_404(
+        ItineraryItem, pk=item_pk, trip=trip, status=ItineraryItem.Status.PROPOSED
+    )
+    if proposal.proposed_by_id != request.user.id:
+        raise PermissionDenied("You can only withdraw your own suggestions.")
+    proposal.delete()
+    messages.success(request, "Suggestion withdrawn.")
+    return redirect("trip_detail", pk=trip.pk)
+
+
+@login_required
+@require_POST
 def trip_invite(request, pk):
     trip = _get_member_trip(request, pk)
     if not trip.is_organizer(request.user):

@@ -42,6 +42,11 @@
                   {% for label, old, new in change.changes %}<li>{{ label }}: <s class="text-muted">{{ old }}</s> &rarr; {{ new }}</li>{% endfor %}
                 </ul>
               {% endif %}
+              {% if change.proposed_by_id == user.id %}
+              <form method="post" action="{% url 'proposal_withdraw' trip.pk change.pk %}">{% csrf_token %}
+                <button class="btn btn-link btn-sm p-0 text-secondary" type="submit">Withdraw my suggestion</button>
+              </form>
+              {% endif %}
             </div>
             {% endfor %}
             <div class="mt-1 d-flex flex-wrap gap-2">
@@ -51,6 +56,10 @@
             {% elif not item.is_proposal %}
               <a class="btn btn-link btn-sm p-0" href="{% url 'propose_edit' trip.pk item.pk %}">Suggest a change</a>
               <a class="btn btn-link btn-sm p-0 text-danger" href="{% url 'propose_remove' trip.pk item.pk %}">Suggest removing</a>
+            {% elif item.proposed_by_id == user.id %}
+              <form method="post" action="{% url 'proposal_withdraw' trip.pk item.pk %}">{% csrf_token %}
+                <button class="btn btn-link btn-sm p-0 text-secondary" type="submit">Withdraw my suggestion</button>
+              </form>
             {% endif %}
             </div>
           </li>

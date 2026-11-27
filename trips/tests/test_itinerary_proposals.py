@@ -167,23 +167,89 @@ class ProposeRemovalTests(ProposalTestBase):
         self.assertContains(page, "suggested by Max Member")
         self.assertContains(page, "Too touristy")
 
-    def test_reason_is_optional(self):
+    def test_reason_is_required(self):
         self.client.force_login(self.participant)
-        self.client.post(self.remove_url, {})
-        self.assertTrue(ItineraryItem.objects.filter(kind=Kind.REMOVE).exists())
+        for data in ({}, {"reason": "   "}):
+            response = self.client.post(self.remove_url, data)
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "Please say why you&#x27;d remove it.")
+        self.assertFalse(ItineraryItem.objects.filter(kind=Kind.REMOVE).exists())
 
     def test_same_person_cannot_propose_removal_twice(self):
         self.client.force_login(self.participant)
-        self.client.post(self.remove_url, {})
-        self.client.post(self.remove_url, {})
+        self.client.post(self.remove_url, {"reason": "Too touristy"})
+        self.client.post(self.remove_url, {"reason": "Still too touristy"})
         self.assertEqual(ItineraryItem.objects.filter(kind=Kind.REMOVE).count(), 1)
 
     def test_removing_the_item_also_removes_proposals_about_it(self):
         self.client.force_login(self.participant)
-        self.client.post(self.remove_url, {})
+        self.client.post(self.remove_url, {"reason": "Too touristy"})
         self.client.post(self.edit_url, self.item_data(time="08:30"))
         self.item.delete()
         self.assertFalse(ItineraryItem.objects.exists())
+
+
+class WithdrawTests(ProposalTestBase):
+    def setUp(self):
+        super().setUp()
+        self.other = User.objects.create_user("other@example.com", password="pw-strong-123")
+        Membership.objects.create(trip=self.trip, user=self.other)
+
+    def make_proposal(self, by, **fields):
+        defaults = {"trip": self.trip, "title": "Fado night", "date": START, "proposed_by": by}
+        defaults.update(fields)
+        return ItineraryItem.objects.create(**defaults)
+
+    def withdraw_url(self, proposal):
+        return reverse("proposal_withdraw", args=[self.trip.pk, proposal.pk])
+
+    def test_participant_withdraws_each_kind_of_own_suggestion(self):
+        proposals = [
+            self.make_proposal(self.participant),
+            self.make_proposal(self.participant, kind=Kind.EDIT, target=self.item),
+            self.make_proposal(self.participant, kind=Kind.REMOVE, target=self.item),
+        ]
+        self.client.force_login(self.participant)
+        for proposal in proposals:
+            response = self.client.post(self.withdraw_url(proposal))
+            self.assertRedirects(response, self.detail_url)
+            self.assertFalse(ItineraryItem.objects.filter(pk=proposal.pk).exists())
+        self.assert_itinerary_unchanged()
+
+    def test_cannot_withdraw_someone_elses_suggestion(self):
+        proposal = self.make_proposal(self.other)
+        for user in (self.participant, self.organizer):
+            self.client.force_login(user)
+            self.assertEqual(self.client.post(self.withdraw_url(proposal)).status_code, 403)
+        self.assertTrue(ItineraryItem.objects.filter(pk=proposal.pk).exists())
+
+    def test_cannot_withdraw_an_approved_item(self):
+        self.client.force_login(self.organizer)
+        self.assertEqual(self.client.post(self.withdraw_url(self.item)).status_code, 404)
+        self.assert_itinerary_unchanged()
+
+    def test_withdraw_needs_post(self):
+        proposal = self.make_proposal(self.participant)
+        self.client.force_login(self.participant)
+        self.assertEqual(self.client.get(self.withdraw_url(proposal)).status_code, 405)
+        self.assertTrue(ItineraryItem.objects.filter(pk=proposal.pk).exists())
+
+    def test_non_member_gets_not_found(self):
+        proposal = self.make_proposal(self.participant)
+        self.client.force_login(self.outsider)
+        self.assertEqual(self.client.post(self.withdraw_url(proposal)).status_code, 404)
+
+    def test_withdraw_button_only_on_own_suggestions(self):
+        mine = self.make_proposal(self.participant, title="Mine")
+        theirs = self.make_proposal(self.other, title="Theirs")
+        mine_change = self.make_proposal(
+            self.participant, kind=Kind.EDIT, target=self.item, title="Tram 28 (late)"
+        )
+        self.client.force_login(self.participant)
+        page = self.client.get(self.detail_url)
+        self.assertContains(page, f'action="{self.withdraw_url(mine)}"')
+        self.assertContains(page, f'action="{self.withdraw_url(mine_change)}"')
+        self.assertNotContains(page, f'action="{self.withdraw_url(theirs)}"')
 
 
 class ProposalPermissionTests(ProposalTestBase):
