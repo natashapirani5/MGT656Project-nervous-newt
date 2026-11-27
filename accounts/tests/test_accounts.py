@@ -84,6 +84,39 @@ class SeedCommandTests(TestCase):
         self.assertTrue(trip.is_member(participant))
         self.assertFalse(trip.is_organizer(participant))
 
+    def test_seed_survives_items_graders_added_with_seeded_titles(self):
+        # The seed runs on every deploy; a duplicate title must not crash it.
+        call_command("seed", stdout=StringIO())
+        dinner = ItineraryItem.objects.get(title="Dinner at a bistro", kind="add")
+        participant = User.objects.get(username="member@example.com")
+        # The organizer adds a second "Dinner at a bistro"...
+        ItineraryItem.objects.create(
+            trip=dinner.trip,
+            title=dinner.title,
+            date=dinner.date,
+            status="approved",
+            proposed_by=dinner.proposed_by,
+        )
+        # ...and the grader participant makes their own suggestions like the seeded ones.
+        ItineraryItem.objects.create(
+            trip=dinner.trip,
+            kind="edit",
+            target=dinner,
+            title=dinner.title,
+            date=dinner.date,
+            notes="d",
+            proposed_by=participant,
+        )
+        ItineraryItem.objects.create(
+            trip=dinner.trip,
+            title="Late-night poutine at La Banquise",
+            date=dinner.date,
+            proposed_by=participant,
+        )
+        call_command("seed", stdout=StringIO())
+        self.assertEqual(ItineraryItem.objects.filter(title=dinner.title, kind="add").count(), 2)
+        self.assertEqual(ItineraryItem.objects.filter(kind="edit").count(), 2)
+
     def test_seeded_accounts_can_log_in(self):
         from accounts.management.commands import seed
 

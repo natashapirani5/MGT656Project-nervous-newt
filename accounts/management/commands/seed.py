@@ -33,6 +33,28 @@ DEMO_TRAVELERS = [
 ]
 
 
+def upsert_first(model, lookup, values):
+    """Update the oldest row matching `lookup` with `values`, or create one.
+
+    Unlike update_or_create, this never fails when graders have since made more rows that
+    match (e.g. the organizer added a second item with a seeded title). The seed runs on
+    every deploy, so it must not crash on real data.
+    """
+    row = model.objects.filter(**lookup).order_by("pk").first()
+    if row is None:
+        return model.objects.create(**lookup, **values)
+    for name, value in values.items():
+        setattr(row, name, value)
+    row.save()
+    return row
+
+
+def create_if_missing(model, lookup, values):
+    """Create a row unless one matching `lookup` exists. Never fails on duplicates."""
+    row = model.objects.filter(**lookup).order_by("pk").first()
+    return row or model.objects.create(**lookup, **values)
+
+
 def upsert_user(email, password, name, profile_fields, is_staff=False):
     user, _ = User.objects.get_or_create(username=email, defaults={"email": email})
     user.email = email
@@ -114,12 +136,15 @@ class Command(BaseCommand):
         ]
         seeded = {}
         for offset, time, title, location in items:
-            seeded[title], _ = ItineraryItem.objects.update_or_create(
-                trip=trip,
-                title=title,
-                kind=ItineraryItem.Kind.ADD,
-                proposed_by=organizer,
-                defaults={
+            seeded[title] = upsert_first(
+                ItineraryItem,
+                lookup={
+                    "trip": trip,
+                    "title": title,
+                    "kind": ItineraryItem.Kind.ADD,
+                    "proposed_by": organizer,
+                },
+                values={
                     "date": start + datetime.timedelta(days=offset),
                     "time": time,
                     "location": location,
@@ -136,25 +161,32 @@ class Command(BaseCommand):
 
         Looked up without their status, so re-seeding never undoes an organizer's decision
         on them (except a rejected one, which comes back so the feature can be tried again).
+        Graders may add their own matching suggestions, so these never fail on duplicates.
         """
-        ItineraryItem.objects.get_or_create(
-            trip=trip,
-            kind=ItineraryItem.Kind.ADD,
-            proposed_by=participant,
-            title="Late-night poutine at La Banquise",
-            defaults={
+        create_if_missing(
+            ItineraryItem,
+            lookup={
+                "trip": trip,
+                "kind": ItineraryItem.Kind.ADD,
+                "proposed_by": participant,
+                "title": "Late-night poutine at La Banquise",
+            },
+            values={
                 "date": start + datetime.timedelta(days=1),
                 "time": datetime.time(22, 0),
                 "location": "Plateau Mont-Royal",
                 "status": ItineraryItem.Status.PROPOSED,
             },
         )
-        ItineraryItem.objects.get_or_create(
-            trip=trip,
-            kind=ItineraryItem.Kind.EDIT,
-            target=dinner,
-            proposed_by=participant,
-            defaults={
+        create_if_missing(
+            ItineraryItem,
+            lookup={
+                "trip": trip,
+                "kind": ItineraryItem.Kind.EDIT,
+                "target": dinner,
+                "proposed_by": participant,
+            },
+            values={
                 "title": dinner.title,
                 "date": dinner.date,
                 "time": datetime.time(20, 30),
