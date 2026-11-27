@@ -49,6 +49,12 @@ def upsert_first(model, lookup, values):
     return row
 
 
+def create_if_missing(model, lookup, values):
+    """Create a row unless one matching `lookup` exists. Never fails on duplicates."""
+    row = model.objects.filter(**lookup).order_by("pk").first()
+    return row or model.objects.create(**lookup, **values)
+
+
 def upsert_user(email, password, name, profile_fields, is_staff=False):
     user, _ = User.objects.get_or_create(username=email, defaults={"email": email})
     user.email = email
@@ -129,21 +135,67 @@ class Command(BaseCommand):
             ),
             (2, datetime.time(10, 0), "Hike up Mount Royal", "Mount Royal Park"),
         ]
+        seeded = {}
         for offset, time, title, location in items:
-            upsert_first(
+            seeded[title] = upsert_first(
                 ItineraryItem,
-                lookup={"trip": trip, "title": title},
+                lookup={
+                    "trip": trip,
+                    "title": title,
+                    "kind": ItineraryItem.Kind.ADD,
+                    "proposed_by": organizer,
+                },
                 values={
                     "date": start + datetime.timedelta(days=offset),
                     "time": time,
                     "location": location,
                     "status": ItineraryItem.Status.APPROVED,
-                    "proposed_by": organizer,
                 },
             )
 
+        self.seed_proposals(trip, participant, start, seeded["Dinner at a bistro"])
         self.seed_friends(organizer, participant)
         self.stdout.write(self.style.SUCCESS("Seed data is in place."))
+
+    def seed_proposals(self, trip, participant, start, dinner):
+        """Pending suggestions from the grader participant (#27), for the organizer to review.
+
+        Looked up without their status, so re-seeding never undoes an organizer's decision
+        on them (except a rejected one, which comes back so the feature can be tried again).
+        Graders may add their own matching suggestions, so these never fail on duplicates.
+        """
+        create_if_missing(
+            ItineraryItem,
+            lookup={
+                "trip": trip,
+                "kind": ItineraryItem.Kind.ADD,
+                "proposed_by": participant,
+                "title": "Late-night poutine at La Banquise",
+            },
+            values={
+                "date": start + datetime.timedelta(days=1),
+                "time": datetime.time(22, 0),
+                "location": "Plateau Mont-Royal",
+                "status": ItineraryItem.Status.PROPOSED,
+            },
+        )
+        create_if_missing(
+            ItineraryItem,
+            lookup={
+                "trip": trip,
+                "kind": ItineraryItem.Kind.EDIT,
+                "target": dinner,
+                "proposed_by": participant,
+            },
+            values={
+                "title": dinner.title,
+                "date": dinner.date,
+                "time": datetime.time(20, 30),
+                "location": dinner.location,
+                "notes": dinner.notes,
+                "status": ItineraryItem.Status.PROPOSED,
+            },
+        )
 
     def seed_friends(self, organizer, participant):
         demo = {}

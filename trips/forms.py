@@ -105,6 +105,16 @@ class ItineraryItemForm(forms.ModelForm):
         return date
 
 
+class ProposeRemovalForm(forms.Form):
+    reason = forms.CharField(
+        label="Why remove it?",
+        help_text="The organizer sees this when deciding.",
+        max_length=300,
+        error_messages={"required": "Please say why you'd remove it."},
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 2}),
+    )
+
+
 class InviteForm(forms.Form):
     """Pick friends to invite. Only the organizer's accepted friends are valid choices."""
 
