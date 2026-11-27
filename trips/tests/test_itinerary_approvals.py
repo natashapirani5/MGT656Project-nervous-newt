@@ -105,6 +105,42 @@ class ApproveTests(ApprovalTestBase):
         # Other pending proposals about the item are untouched.
         self.assertTrue(self.exists(self.remove))
 
+    def test_approving_a_change_does_not_let_older_changes_undo_it(self):
+        # A second suggestion only changes the notes; it still holds the old time and title.
+        notes_only = ItineraryItem.objects.create(
+            trip=self.trip,
+            kind=Kind.EDIT,
+            target=self.item,
+            title="Tram 28",
+            date=START,
+            time=datetime.time(10, 0),
+            location="Graça",
+            notes="Bring coins",
+            proposed_by=self.participant,
+        )
+        self.client.post(self.approve_url(self.edit))
+        notes_only.refresh_from_db()
+        self.assertEqual(notes_only.changes(), [("Notes", "Fewer crowds", "Bring coins")])
+        self.client.post(self.approve_url(notes_only))
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.time, datetime.time(6, 30))  # first approval kept
+        self.assertEqual(self.item.title, "Tram 28 at sunrise")
+        self.assertEqual(self.item.notes, "Bring coins")
+
+    def test_a_change_made_redundant_by_an_approval_is_cleared(self):
+        same = ItineraryItem.objects.create(
+            trip=self.trip,
+            kind=Kind.EDIT,
+            target=self.item,
+            title="Tram 28",
+            date=START,
+            time=datetime.time(6, 30),
+            location="Graça",
+            proposed_by=self.participant,
+        )
+        self.client.post(self.approve_url(self.edit))
+        self.assertFalse(self.exists(same))
+
     def test_approving_removal_deletes_the_item_and_proposals_about_it(self):
         self.client.post(self.approve_url(self.remove))
         self.assertFalse(self.exists(self.item))

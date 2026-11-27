@@ -326,6 +326,27 @@ def _get_pending_proposal(trip, item_pk):
     )
 
 
+def _rebase_other_changes(target, before):
+    """After a change to `target` is approved, update its other pending change proposals.
+
+    A change proposal stores a full copy of the item. Fields its author didn't touch still
+    hold the old values, so approving it later would quietly undo the change just approved.
+    Move those untouched fields to the new values; drop proposals left with no changes.
+    """
+    pending = target.change_proposals.filter(
+        kind=ItineraryItem.Kind.EDIT, status=ItineraryItem.Status.PROPOSED
+    )
+    for other in pending:
+        for name, old_value in before.items():
+            if getattr(other, name) == old_value:
+                setattr(other, name, getattr(target, name))
+        other.target = target
+        if other.changes():
+            other.save()
+        else:
+            other.delete()
+
+
 @login_required
 @require_POST
 def proposal_approve(request, pk, item_pk):
@@ -349,10 +370,12 @@ def proposal_approve(request, pk, item_pk):
             messages.success(request, f"Approved: added “{proposal.title}” to the itinerary.")
         elif proposal.kind == Kind.EDIT:
             target = proposal.target
+            before = {name: getattr(target, name) for name in ItineraryItem.COMPARED_FIELDS}
             for name in ItineraryItem.COMPARED_FIELDS:
                 setattr(target, name, getattr(proposal, name))
             target.save()
             proposal.delete()
+            _rebase_other_changes(target, before)
             messages.success(request, f"Approved: updated “{target.title}”.")
         else:
             title = proposal.target.title
