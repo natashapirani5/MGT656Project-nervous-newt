@@ -124,7 +124,8 @@ class SeedCommandTests(TestCase):
         call_command("seed", stdout=StringIO())
         self.assertEqual(Trip.objects.count(), 2)
         # The original trip keeps its itinerary; the new one isn't filled in.
-        self.assertEqual(seeded.itinerary_items.count(), 5)
+        self.assertEqual(seeded.itinerary_items.filter(status="approved").count(), 5)
+        self.assertFalse(Trip.objects.exclude(pk=seeded.pk).get().itinerary_items.exists())
 
     def test_seeded_accounts_can_log_in(self):
         from accounts.management.commands import seed
