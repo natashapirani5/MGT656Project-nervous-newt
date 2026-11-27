@@ -92,6 +92,15 @@ class SeedCommandTests(TestCase):
         call_command("seed", stdout=StringIO())
         self.assertEqual(ItineraryItem.objects.filter(title="Dinner at a bistro").count(), 2)
 
+    def test_seed_survives_a_second_trip_with_the_seeded_destination(self):
+        call_command("seed", stdout=StringIO())
+        seeded = Trip.objects.get()
+        Trip.objects.create(organizer=seeded.organizer, destination=seeded.destination)
+        call_command("seed", stdout=StringIO())
+        self.assertEqual(Trip.objects.count(), 2)
+        # The original trip keeps its itinerary; the new one isn't filled in.
+        self.assertEqual(seeded.itinerary_items.count(), 5)
+
     def test_seeded_accounts_can_log_in(self):
         from accounts.management.commands import seed
 

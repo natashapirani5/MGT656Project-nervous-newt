@@ -91,10 +91,11 @@ class Command(BaseCommand):
         )
 
         start = timezone.localdate() + datetime.timedelta(days=30)
-        trip, _ = Trip.objects.update_or_create(
-            organizer=organizer,
-            destination=SEED_TRIP_DESTINATION,
-            defaults={
+        # The organizer can create trips (#15), so there may be another "Montreal, Canada".
+        trip = upsert_first(
+            Trip,
+            lookup={"organizer": organizer, "destination": SEED_TRIP_DESTINATION},
+            values={
                 "description": "A relaxing long weekend with great food and vintage shopping.",
                 "start_date": start,
                 "end_date": start + datetime.timedelta(days=3),
