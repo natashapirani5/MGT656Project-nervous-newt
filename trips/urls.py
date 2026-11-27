@@ -27,4 +27,14 @@ urlpatterns = [
         views.proposal_withdraw,
         name="proposal_withdraw",
     ),
+    path(
+        "<int:pk>/items/<int:item_pk>/approve/",
+        views.proposal_approve,
+        name="proposal_approve",
+    ),
+    path(
+        "<int:pk>/items/<int:item_pk>/reject/",
+        views.proposal_reject,
+        name="proposal_reject",
+    ),
 ]

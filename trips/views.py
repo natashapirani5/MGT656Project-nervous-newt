@@ -100,6 +100,7 @@ def trip_detail(request, pk):
             days.setdefault(item.date, []).append(item)
     is_organizer = trip.is_organizer(request.user)
     context = {
+        "pending_count": sum(1 for item in items if item.is_proposal),
         "trip": trip,
         "memberships": trip.memberships.select_related("user__profile"),
         "days": sorted(days.items()),
@@ -314,6 +315,85 @@ def propose_remove(request, pk, item_pk):
     return render(
         request, "trips/propose_remove.html", {"trip": trip, "item": target, "form": form}
     )
+
+
+def _get_pending_proposal(trip, item_pk):
+    return get_object_or_404(
+        ItineraryItem.objects.select_related("target"),
+        pk=item_pk,
+        trip=trip,
+        status=ItineraryItem.Status.PROPOSED,
+    )
+
+
+def _rebase_other_changes(target, before):
+    """After a change to `target` is approved, update its other pending change proposals.
+
+    A change proposal stores a full copy of the item. Fields its author didn't touch still
+    hold the old values, so approving it later would quietly undo the change just approved.
+    Move those untouched fields to the new values; drop proposals left with no changes.
+    """
+    pending = target.change_proposals.filter(
+        kind=ItineraryItem.Kind.EDIT, status=ItineraryItem.Status.PROPOSED
+    )
+    for other in pending:
+        for name, old_value in before.items():
+            if getattr(other, name) == old_value:
+                setattr(other, name, getattr(target, name))
+        other.target = target
+        if other.changes():
+            other.save()
+        else:
+            other.delete()
+
+
+@login_required
+@require_POST
+def proposal_approve(request, pk, item_pk):
+    """The organizer accepts a suggestion and it takes effect."""
+    trip = _get_organizer_trip(request, pk, "approve suggestions")
+    proposal = _get_pending_proposal(trip, item_pk)
+    Kind = ItineraryItem.Kind
+
+    if proposal.kind != Kind.REMOVE and not trip.covers(proposal.date):
+        messages.error(
+            request,
+            f"“{proposal.title}” is on {proposal.date:%b} {proposal.date.day}, outside the "
+            "trip dates. Reject it, or change the trip dates first.",
+        )
+        return redirect("trip_detail", pk=trip.pk)
+
+    with transaction.atomic():
+        if proposal.kind == Kind.ADD:
+            proposal.status = ItineraryItem.Status.APPROVED
+            proposal.save(update_fields=["status"])
+            messages.success(request, f"Approved: added “{proposal.title}” to the itinerary.")
+        elif proposal.kind == Kind.EDIT:
+            target = proposal.target
+            before = {name: getattr(target, name) for name in ItineraryItem.COMPARED_FIELDS}
+            for name in ItineraryItem.COMPARED_FIELDS:
+                setattr(target, name, getattr(proposal, name))
+            target.save()
+            proposal.delete()
+            _rebase_other_changes(target, before)
+            messages.success(request, f"Approved: updated “{target.title}”.")
+        else:
+            title = proposal.target.title
+            # Deleting the item also deletes every proposal about it, including this one.
+            proposal.target.delete()
+            messages.success(request, f"Approved: removed “{title}” from the itinerary.")
+    return redirect("trip_detail", pk=trip.pk)
+
+
+@login_required
+@require_POST
+def proposal_reject(request, pk, item_pk):
+    """The organizer turns down a suggestion; the itinerary stays as it is."""
+    trip = _get_organizer_trip(request, pk, "reject suggestions")
+    proposal = _get_pending_proposal(trip, item_pk)
+    proposal.delete()
+    messages.info(request, "Suggestion rejected. The itinerary is unchanged.")
+    return redirect("trip_detail", pk=trip.pk)
 
 
 @login_required

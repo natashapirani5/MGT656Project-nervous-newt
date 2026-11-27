@@ -153,12 +153,19 @@ class Command(BaseCommand):
                 },
             )
 
-        self.seed_proposals(trip, participant, start, seeded["Dinner at a bistro"])
+        self.seed_proposals(
+            trip,
+            participant,
+            start,
+            seeded["Dinner at a bistro"],
+            seeded["Vintage shopping on Saint-Laurent"],
+        )
         self.seed_friends(organizer, participant)
         self.stdout.write(self.style.SUCCESS("Seed data is in place."))
 
-    def seed_proposals(self, trip, participant, start, dinner):
-        """Pending suggestions from the grader participant (#27), for the organizer to review.
+    def seed_proposals(self, trip, participant, start, dinner, shopping):
+        """Pending suggestions from the grader participant (#27): one of each kind, for the
+        organizer to approve or reject (#28).
 
         Looked up without their status, so re-seeding never undoes an organizer's decision
         on them (except a rejected one, which comes back so the feature can be tried again).
@@ -193,6 +200,23 @@ class Command(BaseCommand):
                 "time": datetime.time(20, 30),
                 "location": dinner.location,
                 "notes": dinner.notes,
+                "status": ItineraryItem.Status.PROPOSED,
+            },
+        )
+        create_if_missing(
+            ItineraryItem,
+            lookup={
+                "trip": trip,
+                "kind": ItineraryItem.Kind.REMOVE,
+                "target": shopping,
+                "proposed_by": participant,
+            },
+            values={
+                "title": shopping.title,
+                "date": shopping.date,
+                "time": shopping.time,
+                "location": shopping.location,
+                "notes": "I'd rather spend that afternoon at the Botanical Garden.",
                 "status": ItineraryItem.Status.PROPOSED,
             },
         )
