@@ -16,7 +16,8 @@
   <div class="col-lg-8">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
       <h2 class="h5 mb-0">Itinerary</h2>
-      {% if is_organizer %}<a class="btn btn-primary btn-sm" href="{% url 'item_add' trip.pk %}">Add item</a>{% endif %}
+      {% if is_organizer %}<a class="btn btn-primary btn-sm" href="{% url 'item_add' trip.pk %}">Add item</a>
+      {% else %}<a class="btn btn-outline-primary btn-sm" href="{% url 'propose_add' trip.pk %}">Suggest an item</a>{% endif %}
     </div>
     {% for day, items in days %}
       <div class="card mb-3 shadow-sm">
@@ -27,14 +28,31 @@
             <span class="text-muted me-2">{{ item.time|time:"g:i A"|default:"—" }}</span>
             <strong>{{ item.title }}</strong>
             {% if item.location %}<span class="text-muted"> &middot; {{ item.location }}</span>{% endif %}
-            {% if item.status == "proposed" %}<span class="badge text-bg-warning ms-1">proposed</span>{% endif %}
+            {% if item.is_proposal %}<span class="badge text-bg-warning ms-1">proposed</span>{% endif %}
             {% if item.notes %}<div class="small">{{ item.notes }}</div>{% endif %}
+            {% if item.is_proposal %}<div class="small text-muted">Suggested by {{ item.suggested_by }}</div>{% endif %}
+            {% for change in item.pending_changes %}
+            <div class="small border-start border-3 border-warning ps-2 mt-2">
+              <span class="badge text-bg-warning">proposed</span>
+              {% if change.kind == "remove" %}
+                <strong>Remove this item</strong>, suggested by {{ change.suggested_by }}{% if change.notes %}: “{{ change.notes }}”{% endif %}
+              {% else %}
+                <strong>Change</strong> suggested by {{ change.suggested_by }}:
+                <ul class="mb-0 ps-3">
+                  {% for label, old, new in change.changes %}<li>{{ label }}: <s class="text-muted">{{ old }}</s> &rarr; {{ new }}</li>{% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+            {% endfor %}
+            <div class="mt-1 d-flex flex-wrap gap-2">
             {% if is_organizer %}
-            <div class="mt-1 d-flex gap-2">
               <a class="btn btn-link btn-sm p-0" href="{% url 'item_edit' trip.pk item.pk %}">Edit</a>
               <a class="btn btn-link btn-sm p-0 text-danger" href="{% url 'item_delete' trip.pk item.pk %}">Remove</a>
-            </div>
+            {% elif not item.is_proposal %}
+              <a class="btn btn-link btn-sm p-0" href="{% url 'propose_edit' trip.pk item.pk %}">Suggest a change</a>
+              <a class="btn btn-link btn-sm p-0 text-danger" href="{% url 'propose_remove' trip.pk item.pk %}">Suggest removing</a>
             {% endif %}
+            </div>
           </li>
           {% endfor %}
         </ul>

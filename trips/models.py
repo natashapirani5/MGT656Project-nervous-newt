@@ -1,3 +1,5 @@
+import datetime
+
 from django.conf import settings
 from django.db import models
 
@@ -55,9 +57,24 @@ class Membership(models.Model):
 
 
 class ItineraryItem(models.Model):
+    """One itinerary entry, or a participant's proposal.
+
+    - kind=ADD: an item in the itinerary (approved) or a proposed new item (proposed).
+    - kind=EDIT: a proposed change to `target`; its fields hold the proposed new values.
+    - kind=REMOVE: a proposal to remove `target`; its fields copy the target for display.
+    EDIT and REMOVE rows are always proposals and never appear in the itinerary themselves.
+    """
+
     class Status(models.TextChoices):
         PROPOSED = "proposed", "Proposed"
         APPROVED = "approved", "Approved"
+
+    class Kind(models.TextChoices):
+        ADD = "add", "New item"
+        EDIT = "edit", "Change"
+        REMOVE = "remove", "Removal"
+
+    COMPARED_FIELDS = ("title", "date", "time", "location", "notes")
 
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name="itinerary_items")
     title = models.CharField(max_length=200)
@@ -69,9 +86,46 @@ class ItineraryItem(models.Model):
     proposed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
     )
+    kind = models.CharField(max_length=10, choices=Kind.choices, default=Kind.ADD)
+    # The approved item an EDIT or REMOVE proposal is about. If that item is removed,
+    # proposals about it go too.
+    target = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="change_proposals",
+    )
 
     class Meta:
         ordering = ["date", "time", "id"]
 
     def __str__(self):
         return f"{self.date}: {self.title}"
+
+    @property
+    def is_proposal(self):
+        return self.status == self.Status.PROPOSED
+
+    def changes(self):
+        """For an EDIT proposal: [(label, old, new)] as display text, one per changed field."""
+        if self.kind != self.Kind.EDIT or self.target is None:
+            return []
+        diffs = []
+        for name in self.COMPARED_FIELDS:
+            old, new = getattr(self.target, name), getattr(self, name)
+            if old != new:
+                label = self._meta.get_field(name).verbose_name.capitalize()
+                diffs.append((label, _display(old), _display(new)))
+        return diffs
+
+
+def _display(value):
+    """Short, human-friendly text for an itinerary field value."""
+    if value in (None, ""):
+        return "(none)"
+    if isinstance(value, datetime.date):
+        return f"{value:%a, %b} {value.day}"
+    if isinstance(value, datetime.time):
+        return f"{value.hour % 12 or 12}:{value:%M %p}"
+    return str(value)

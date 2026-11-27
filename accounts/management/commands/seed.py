@@ -112,21 +112,57 @@ class Command(BaseCommand):
             ),
             (2, datetime.time(10, 0), "Hike up Mount Royal", "Mount Royal Park"),
         ]
+        seeded = {}
         for offset, time, title, location in items:
-            ItineraryItem.objects.update_or_create(
+            seeded[title], _ = ItineraryItem.objects.update_or_create(
                 trip=trip,
                 title=title,
+                kind=ItineraryItem.Kind.ADD,
+                proposed_by=organizer,
                 defaults={
                     "date": start + datetime.timedelta(days=offset),
                     "time": time,
                     "location": location,
                     "status": ItineraryItem.Status.APPROVED,
-                    "proposed_by": organizer,
                 },
             )
 
+        self.seed_proposals(trip, participant, start, seeded["Dinner at a bistro"])
         self.seed_friends(organizer, participant)
         self.stdout.write(self.style.SUCCESS("Seed data is in place."))
+
+    def seed_proposals(self, trip, participant, start, dinner):
+        """Pending suggestions from the grader participant (#27), for the organizer to review.
+
+        Looked up without their status, so re-seeding never undoes an organizer's decision
+        on them (except a rejected one, which comes back so the feature can be tried again).
+        """
+        ItineraryItem.objects.get_or_create(
+            trip=trip,
+            kind=ItineraryItem.Kind.ADD,
+            proposed_by=participant,
+            title="Late-night poutine at La Banquise",
+            defaults={
+                "date": start + datetime.timedelta(days=1),
+                "time": datetime.time(22, 0),
+                "location": "Plateau Mont-Royal",
+                "status": ItineraryItem.Status.PROPOSED,
+            },
+        )
+        ItineraryItem.objects.get_or_create(
+            trip=trip,
+            kind=ItineraryItem.Kind.EDIT,
+            target=dinner,
+            proposed_by=participant,
+            defaults={
+                "title": dinner.title,
+                "date": dinner.date,
+                "time": datetime.time(20, 30),
+                "location": dinner.location,
+                "notes": dinner.notes,
+                "status": ItineraryItem.Status.PROPOSED,
+            },
+        )
 
     def seed_friends(self, organizer, participant):
         demo = {}

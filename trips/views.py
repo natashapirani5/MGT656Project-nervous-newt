@@ -14,6 +14,7 @@ from .forms import (
     WISHLIST_DATALIST_ID,
     InviteForm,
     ItineraryItemForm,
+    ProposeRemovalForm,
     TripForm,
     wishlist_destinations,
 )
@@ -34,6 +35,28 @@ def _get_organizer_trip(request, pk, action):
     if not trip.is_organizer(request.user):
         raise PermissionDenied(f"Only the trip's organizer can {action}.")
     return trip
+
+
+def _get_participant_trip(request, pk):
+    """Return the trip if the user is a participant; 404 for non-members, 403 for the organizer
+    (who changes the itinerary directly instead of proposing)."""
+    trip = _get_member_trip(request, pk)
+    if trip.is_organizer(request.user):
+        raise PermissionDenied(
+            "Organizers change the itinerary directly; proposals are for participants."
+        )
+    return trip
+
+
+def _get_approved_item(trip, item_pk):
+    """An item in the trip's itinerary (not a proposal), or 404."""
+    return get_object_or_404(
+        ItineraryItem,
+        pk=item_pk,
+        trip=trip,
+        kind=ItineraryItem.Kind.ADD,
+        status=ItineraryItem.Status.APPROVED,
+    )
 
 
 def _form_context(request, form, **extra):
@@ -60,9 +83,21 @@ def dashboard(request):
 @login_required
 def trip_detail(request, pk):
     trip = _get_member_trip(request, pk)
+    items = list(trip.itinerary_items.select_related("proposed_by__profile", "target"))
+    # Change and removal proposals are shown under the item they're about, not as items.
+    pending_by_target = {}
+    for item in items:
+        # The suggester's account may have been deleted (proposed_by is then empty).
+        item.suggested_by = (
+            traveler_name(item.proposed_by) if item.proposed_by else "a former member"
+        )
+        if item.kind != ItineraryItem.Kind.ADD and item.is_proposal:
+            pending_by_target.setdefault(item.target_id, []).append(item)
     days = {}
-    for item in trip.itinerary_items.all():
-        days.setdefault(item.date, []).append(item)
+    for item in items:
+        if item.kind == ItineraryItem.Kind.ADD:
+            item.pending_changes = pending_by_target.get(item.pk, [])
+            days.setdefault(item.date, []).append(item)
     is_organizer = trip.is_organizer(request.user)
     context = {
         "trip": trip,
@@ -149,7 +184,7 @@ def item_add(request, pk):
 @login_required
 def item_edit(request, pk, item_pk):
     trip = _get_organizer_trip(request, pk, "edit itinerary items")
-    item = get_object_or_404(ItineraryItem, pk=item_pk, trip=trip)
+    item = get_object_or_404(ItineraryItem, pk=item_pk, trip=trip, kind=ItineraryItem.Kind.ADD)
     form = ItineraryItemForm(request.POST or None, instance=item, trip=trip)
     if request.method == "POST" and form.is_valid():
         form.save()
@@ -171,13 +206,114 @@ def item_edit(request, pk, item_pk):
 def item_delete(request, pk, item_pk):
     """GET shows a confirmation page; POST deletes."""
     trip = _get_organizer_trip(request, pk, "remove itinerary items")
-    item = get_object_or_404(ItineraryItem, pk=item_pk, trip=trip)
+    item = get_object_or_404(ItineraryItem, pk=item_pk, trip=trip, kind=ItineraryItem.Kind.ADD)
     if request.method == "POST":
         title = item.title
         item.delete()
         messages.success(request, f"Removed “{title}” from the itinerary.")
         return redirect("trip_detail", pk=trip.pk)
     return render(request, "trips/item_confirm_delete.html", {"trip": trip, "item": item})
+
+
+@login_required
+def propose_add(request, pk):
+    trip = _get_participant_trip(request, pk)
+    form = ItineraryItemForm(request.POST or None, trip=trip)
+    if request.method == "POST" and form.is_valid():
+        proposal = form.save(commit=False)
+        proposal.trip = trip
+        proposal.kind = ItineraryItem.Kind.ADD
+        proposal.status = ItineraryItem.Status.PROPOSED
+        proposal.proposed_by = request.user
+        proposal.save()
+        messages.success(
+            request, f"Suggested “{proposal.title}”. The organizer will approve or reject it."
+        )
+        return redirect("trip_detail", pk=trip.pk)
+    return render(
+        request,
+        "trips/item_form.html",
+        {
+            "form": form,
+            "trip": trip,
+            "heading": "Suggest an itinerary item",
+            "intro": "The organizer approves suggestions before they join the itinerary.",
+            "submit_label": "Send suggestion",
+        },
+    )
+
+
+@login_required
+def propose_edit(request, pk, item_pk):
+    trip = _get_participant_trip(request, pk)
+    target = _get_approved_item(trip, item_pk)
+    initial = {name: getattr(target, name) for name in ItineraryItem.COMPARED_FIELDS}
+    form = ItineraryItemForm(request.POST or None, initial=initial, trip=trip)
+    if request.method == "POST" and form.is_valid():
+        proposal = form.save(commit=False)
+        proposal.trip = trip
+        proposal.kind = ItineraryItem.Kind.EDIT
+        proposal.status = ItineraryItem.Status.PROPOSED
+        proposal.target = target
+        proposal.proposed_by = request.user
+        if not proposal.changes():
+            form.add_error(None, "You haven't changed anything yet.")
+        else:
+            proposal.save()
+            messages.success(
+                request,
+                f"Suggested a change to “{target.title}”. The organizer will approve or reject it.",
+            )
+            return redirect("trip_detail", pk=trip.pk)
+    return render(
+        request,
+        "trips/item_form.html",
+        {
+            "form": form,
+            "trip": trip,
+            "heading": f"Suggest a change to “{target.title}”",
+            "intro": "Edit the details below. Nothing changes until the organizer approves.",
+            "submit_label": "Send suggestion",
+        },
+    )
+
+
+@login_required
+def propose_remove(request, pk, item_pk):
+    """GET shows a confirmation page with an optional reason; POST sends the proposal."""
+    trip = _get_participant_trip(request, pk)
+    target = _get_approved_item(trip, item_pk)
+    # An empty reason still counts as submitting, so bind on the method, not on the data.
+    form = ProposeRemovalForm(request.POST if request.method == "POST" else None)
+    if request.method == "POST" and form.is_valid():
+        already = target.change_proposals.filter(
+            kind=ItineraryItem.Kind.REMOVE,
+            status=ItineraryItem.Status.PROPOSED,
+            proposed_by=request.user,
+        ).exists()
+        if already:
+            messages.info(request, f"You've already suggested removing “{target.title}”.")
+        else:
+            ItineraryItem.objects.create(
+                trip=trip,
+                kind=ItineraryItem.Kind.REMOVE,
+                status=ItineraryItem.Status.PROPOSED,
+                target=target,
+                proposed_by=request.user,
+                title=target.title,
+                date=target.date,
+                time=target.time,
+                location=target.location,
+                notes=form.cleaned_data["reason"],
+            )
+            messages.success(
+                request,
+                f"Suggested removing “{target.title}”. The organizer will approve or reject it.",
+            )
+        return redirect("trip_detail", pk=trip.pk)
+    return render(
+        request, "trips/propose_remove.html", {"trip": trip, "item": target, "form": form}
+    )
 
 
 @login_required
