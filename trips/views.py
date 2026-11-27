@@ -10,8 +10,14 @@ from django.views.decorators.http import require_POST
 from friends.models import friends_of
 from friends.templatetags.friend_tags import traveler_name
 
-from .forms import WISHLIST_DATALIST_ID, InviteForm, TripForm, wishlist_destinations
-from .models import Membership, Trip
+from .forms import (
+    WISHLIST_DATALIST_ID,
+    InviteForm,
+    ItineraryItemForm,
+    TripForm,
+    wishlist_destinations,
+)
+from .models import ItineraryItem, Membership, Trip
 
 
 def _get_member_trip(request, pk):
@@ -19,6 +25,14 @@ def _get_member_trip(request, pk):
     trip = get_object_or_404(Trip, pk=pk)
     if not trip.is_member(request.user):
         raise Http404("Trip not found")
+    return trip
+
+
+def _get_organizer_trip(request, pk, action):
+    """Return the trip if the user organizes it; 404 for non-members, 403 for participants."""
+    trip = _get_member_trip(request, pk)
+    if not trip.is_organizer(request.user):
+        raise PermissionDenied(f"Only the trip's organizer can {action}.")
     return trip
 
 
@@ -110,6 +124,60 @@ def trip_edit(request, pk):
             submit_label="Save changes",
         ),
     )
+
+
+@login_required
+def item_add(request, pk):
+    trip = _get_organizer_trip(request, pk, "add itinerary items")
+    form = ItineraryItemForm(request.POST or None, trip=trip)
+    if request.method == "POST" and form.is_valid():
+        item = form.save(commit=False)
+        item.trip = trip
+        # Items the organizer adds are approved straight away.
+        item.status = ItineraryItem.Status.APPROVED
+        item.proposed_by = request.user
+        item.save()
+        messages.success(request, f"Added “{item.title}” to the itinerary.")
+        return redirect("trip_detail", pk=trip.pk)
+    return render(
+        request,
+        "trips/item_form.html",
+        {"form": form, "trip": trip, "heading": "Add an itinerary item", "submit_label": "Add"},
+    )
+
+
+@login_required
+def item_edit(request, pk, item_pk):
+    trip = _get_organizer_trip(request, pk, "edit itinerary items")
+    item = get_object_or_404(ItineraryItem, pk=item_pk, trip=trip)
+    form = ItineraryItemForm(request.POST or None, instance=item, trip=trip)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, f"Saved “{item.title}”.")
+        return redirect("trip_detail", pk=trip.pk)
+    return render(
+        request,
+        "trips/item_form.html",
+        {
+            "form": form,
+            "trip": trip,
+            "heading": f"Edit “{item.title}”",
+            "submit_label": "Save changes",
+        },
+    )
+
+
+@login_required
+def item_delete(request, pk, item_pk):
+    """GET shows a confirmation page; POST deletes."""
+    trip = _get_organizer_trip(request, pk, "remove itinerary items")
+    item = get_object_or_404(ItineraryItem, pk=item_pk, trip=trip)
+    if request.method == "POST":
+        title = item.title
+        item.delete()
+        messages.success(request, f"Removed “{title}” from the itinerary.")
+        return redirect("trip_detail", pk=trip.pk)
+    return render(request, "trips/item_confirm_delete.html", {"trip": trip, "item": item})
 
 
 @login_required

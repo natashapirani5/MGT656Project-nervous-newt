@@ -14,7 +14,10 @@
 <p>{{ trip.description }}</p>
 <div class="row g-4">
   <div class="col-lg-8">
-    <h2 class="h5">Itinerary</h2>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+      <h2 class="h5 mb-0">Itinerary</h2>
+      {% if is_organizer %}<a class="btn btn-primary btn-sm" href="{% url 'item_add' trip.pk %}">Add item</a>{% endif %}
+    </div>
     {% for day, items in days %}
       <div class="card mb-3 shadow-sm">
         <div class="card-header fw-semibold">{{ day|date:"l, M j" }}</div>
@@ -26,6 +29,12 @@
             {% if item.location %}<span class="text-muted"> &middot; {{ item.location }}</span>{% endif %}
             {% if item.status == "proposed" %}<span class="badge text-bg-warning ms-1">proposed</span>{% endif %}
             {% if item.notes %}<div class="small">{{ item.notes }}</div>{% endif %}
+            {% if is_organizer %}
+            <div class="mt-1 d-flex gap-2">
+              <a class="btn btn-link btn-sm p-0" href="{% url 'item_edit' trip.pk item.pk %}">Edit</a>
+              <a class="btn btn-link btn-sm p-0 text-danger" href="{% url 'item_delete' trip.pk item.pk %}">Remove</a>
+            </div>
+            {% endif %}
           </li>
           {% endfor %}
         </ul>
