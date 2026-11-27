@@ -27,6 +27,12 @@ class Trip(models.Model):
     def is_member(self, user):
         return self.memberships.filter(user=user).exists()
 
+    def covers(self, date):
+        """True if `date` falls within the trip's dates (or the trip has no dates set)."""
+        if self.start_date and date < self.start_date:
+            return False
+        return not (self.end_date and date > self.end_date)
+
 
 class Membership(models.Model):
     """A user's role and RSVP on one trip. Roles are per trip."""

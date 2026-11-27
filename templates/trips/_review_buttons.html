@@ -1,0 +1,9 @@
+{# Approve / Reject for one pending suggestion. Organizer only; expects `trip` and `proposal`. #}
+<div class="d-flex flex-wrap gap-2 mt-1">
+  <form method="post" action="{% url 'proposal_approve' trip.pk proposal.pk %}">{% csrf_token %}
+    <button class="btn btn-success btn-sm" type="submit">Approve</button>
+  </form>
+  <form method="post" action="{% url 'proposal_reject' trip.pk proposal.pk %}">{% csrf_token %}
+    <button class="btn btn-outline-danger btn-sm" type="submit">Reject</button>
+  </form>
+</div>

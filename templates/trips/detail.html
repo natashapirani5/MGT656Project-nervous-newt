@@ -19,6 +19,11 @@
       {% if is_organizer %}<a class="btn btn-primary btn-sm" href="{% url 'item_add' trip.pk %}">Add item</a>
       {% else %}<a class="btn btn-outline-primary btn-sm" href="{% url 'propose_add' trip.pk %}">Suggest an item</a>{% endif %}
     </div>
+    {% if is_organizer and pending_count %}
+    <div class="alert alert-warning py-2">
+      {{ pending_count }} suggestion{{ pending_count|pluralize }} waiting for your review. Look for the yellow <span class="badge text-bg-warning">proposed</span> badges below.
+    </div>
+    {% endif %}
     {% for day, items in days %}
       <div class="card mb-3 shadow-sm">
         <div class="card-header fw-semibold">{{ day|date:"l, M j" }}</div>
@@ -42,17 +47,22 @@
                   {% for label, old, new in change.changes %}<li>{{ label }}: <s class="text-muted">{{ old }}</s> &rarr; {{ new }}</li>{% endfor %}
                 </ul>
               {% endif %}
-              {% if change.proposed_by_id == user.id %}
+              {% if is_organizer %}
+                {% include "trips/_review_buttons.html" with proposal=change %}
+              {% elif change.proposed_by_id == user.id %}
               <form method="post" action="{% url 'proposal_withdraw' trip.pk change.pk %}">{% csrf_token %}
                 <button class="btn btn-link btn-sm p-0 text-secondary" type="submit">Withdraw my suggestion</button>
               </form>
               {% endif %}
             </div>
             {% endfor %}
+            {% if is_organizer and item.is_proposal %}
+              {% include "trips/_review_buttons.html" with proposal=item %}
+            {% endif %}
             <div class="mt-1 d-flex flex-wrap gap-2">
             {% if is_organizer %}
               <a class="btn btn-link btn-sm p-0" href="{% url 'item_edit' trip.pk item.pk %}">Edit</a>
-              <a class="btn btn-link btn-sm p-0 text-danger" href="{% url 'item_delete' trip.pk item.pk %}">Remove</a>
+              {% if not item.is_proposal %}<a class="btn btn-link btn-sm p-0 text-danger" href="{% url 'item_delete' trip.pk item.pk %}">Remove</a>{% endif %}
             {% elif not item.is_proposal %}
               <a class="btn btn-link btn-sm p-0" href="{% url 'propose_edit' trip.pk item.pk %}">Suggest a change</a>
               <a class="btn btn-link btn-sm p-0 text-danger" href="{% url 'propose_remove' trip.pk item.pk %}">Suggest removing</a>

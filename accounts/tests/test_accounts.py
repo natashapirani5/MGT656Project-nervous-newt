@@ -74,9 +74,13 @@ class SeedCommandTests(TestCase):
         self.assertEqual(User.objects.count(), 5)
         self.assertEqual(Trip.objects.count(), 1)
         self.assertEqual(Membership.objects.count(), 2)
-        # 5 approved items plus 2 pending proposals from the participant (#27).
+        # 5 approved items plus one pending proposal of each kind from the participant.
         self.assertEqual(ItineraryItem.objects.filter(status="approved").count(), 5)
-        self.assertEqual(ItineraryItem.objects.filter(status="proposed").count(), 2)
+        proposals = ItineraryItem.objects.filter(status="proposed")
+        self.assertEqual(
+            sorted(proposals.values_list("kind", flat=True)), ["add", "edit", "remove"]
+        )
+        self.assertTrue(all(p.proposed_by.username == "member@example.com" for p in proposals))
         trip = Trip.objects.get()
         organizer = User.objects.get(username="admin@example.com")
         participant = User.objects.get(username="member@example.com")
