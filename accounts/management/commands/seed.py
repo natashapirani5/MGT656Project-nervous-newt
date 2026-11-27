@@ -203,12 +203,15 @@ class Command(BaseCommand):
                 "status": ItineraryItem.Status.PROPOSED,
             },
         )
-        ItineraryItem.objects.get_or_create(
-            trip=trip,
-            kind=ItineraryItem.Kind.REMOVE,
-            target=shopping,
-            proposed_by=participant,
-            defaults={
+        create_if_missing(
+            ItineraryItem,
+            lookup={
+                "trip": trip,
+                "kind": ItineraryItem.Kind.REMOVE,
+                "target": shopping,
+                "proposed_by": participant,
+            },
+            values={
                 "title": shopping.title,
                 "date": shopping.date,
                 "time": shopping.time,
