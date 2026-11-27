@@ -4,7 +4,7 @@ from django import forms
 
 from friends.models import friends_of
 
-from .models import Trip
+from .models import ItineraryItem, Trip
 
 WISHLIST_DATALIST_ID = "wishlist-destinations"
 
@@ -61,6 +61,48 @@ class TripForm(forms.ModelForm):
         if start and end and end < start:
             self.add_error("end_date", "The end date can't be before the start date.")
         return cleaned
+
+
+class ItineraryItemForm(forms.ModelForm):
+    """Add or edit one itinerary item. The date must fall within the trip's dates, if set."""
+
+    class Meta:
+        model = ItineraryItem
+        fields = ("title", "date", "time", "location", "notes")
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "time": forms.TimeInput(attrs={"class": "form-control", "type": "time"}),
+            "location": forms.TextInput(attrs={"class": "form-control"}),
+            "notes": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+        }
+        help_texts = {"time": "Optional."}
+        error_messages = {
+            "title": {"required": "Please enter a title."},
+            "date": {"required": "Please pick a date."},
+        }
+
+    def __init__(self, *args, trip, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.trip = trip
+        # Let the phone/desktop date picker grey out days outside the trip.
+        if trip.start_date:
+            self.fields["date"].widget.attrs["min"] = trip.start_date.isoformat()
+        if trip.end_date:
+            self.fields["date"].widget.attrs["max"] = trip.end_date.isoformat()
+
+    def clean_date(self):
+        date = self.cleaned_data["date"]
+        start, end = self.trip.start_date, self.trip.end_date
+        if (start and date < start) or (end and date > end):
+            if start and end:
+                window = f"between {start:%b} {start.day} and {end:%b} {end.day}, {end.year}"
+            elif start:
+                window = f"on or after {start:%b} {start.day}, {start.year}"
+            else:
+                window = f"on or before {end:%b} {end.day}, {end.year}"
+            raise forms.ValidationError(f"Pick a date {window}, during the trip.")
+        return date
 
 
 class InviteForm(forms.Form):

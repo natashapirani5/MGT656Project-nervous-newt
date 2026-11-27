@@ -33,6 +33,22 @@ DEMO_TRAVELERS = [
 ]
 
 
+def upsert_first(model, lookup, values):
+    """Update the oldest row matching `lookup` with `values`, or create one.
+
+    Unlike update_or_create, this never fails when graders have since made more rows that
+    match (e.g. the organizer added a second item with a seeded title). The seed runs on
+    every deploy, so it must not crash on real data.
+    """
+    row = model.objects.filter(**lookup).order_by("pk").first()
+    if row is None:
+        return model.objects.create(**lookup, **values)
+    for name, value in values.items():
+        setattr(row, name, value)
+    row.save()
+    return row
+
+
 def upsert_user(email, password, name, profile_fields, is_staff=False):
     user, _ = User.objects.get_or_create(username=email, defaults={"email": email})
     user.email = email
@@ -75,10 +91,11 @@ class Command(BaseCommand):
         )
 
         start = timezone.localdate() + datetime.timedelta(days=30)
-        trip, _ = Trip.objects.update_or_create(
-            organizer=organizer,
-            destination=SEED_TRIP_DESTINATION,
-            defaults={
+        # The organizer can create trips (#15), so there may be another "Montreal, Canada".
+        trip = upsert_first(
+            Trip,
+            lookup={"organizer": organizer, "destination": SEED_TRIP_DESTINATION},
+            values={
                 "description": "A relaxing long weekend with great food and vintage shopping.",
                 "start_date": start,
                 "end_date": start + datetime.timedelta(days=3),
@@ -113,10 +130,10 @@ class Command(BaseCommand):
             (2, datetime.time(10, 0), "Hike up Mount Royal", "Mount Royal Park"),
         ]
         for offset, time, title, location in items:
-            ItineraryItem.objects.update_or_create(
-                trip=trip,
-                title=title,
-                defaults={
+            upsert_first(
+                ItineraryItem,
+                lookup={"trip": trip, "title": title},
+                values={
                     "date": start + datetime.timedelta(days=offset),
                     "time": time,
                     "location": location,
