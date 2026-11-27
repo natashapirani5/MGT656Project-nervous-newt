@@ -255,6 +255,15 @@ class TripPageReviewTests(ApprovalTestBase):
             self.assertNotContains(page, self.approve_url(proposal))
             self.assertNotContains(page, self.reject_url(proposal))
 
+    def test_participant_sees_waiting_label_on_every_pending_proposal(self):
+        self.client.force_login(self.participant)
+        page = self.client.get(self.detail_url)
+        self.assertContains(page, "Waiting for the organizer to approve", count=3)
+
+    def test_organizer_does_not_see_waiting_label(self):
+        self.client.force_login(self.organizer)
+        self.assertNotContains(self.client.get(self.detail_url), "Waiting for the organizer")
+
     def test_no_count_when_nothing_is_pending(self):
         ItineraryItem.objects.filter(status=Status.PROPOSED).delete()
         self.client.force_login(self.organizer)

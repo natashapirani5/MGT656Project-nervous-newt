@@ -35,7 +35,7 @@
             {% if item.location %}<span class="text-muted"> &middot; {{ item.location }}</span>{% endif %}
             {% if item.is_proposal %}<span class="badge text-bg-warning ms-1">proposed</span>{% endif %}
             {% if item.notes %}<div class="small">{{ item.notes }}</div>{% endif %}
-            {% if item.is_proposal %}<div class="small text-muted">Suggested by {{ item.suggested_by }}</div>{% endif %}
+            {% if item.is_proposal %}<div class="small text-muted">Suggested by {{ item.suggested_by }}{% if not is_organizer %} &middot; <span class="fst-italic">Waiting for the organizer to approve</span>{% endif %}</div>{% endif %}
             {% for change in item.pending_changes %}
             <div class="small border-start border-3 border-warning ps-2 mt-2">
               <span class="badge text-bg-warning">proposed</span>
@@ -49,7 +49,10 @@
               {% endif %}
               {% if is_organizer %}
                 {% include "trips/_review_buttons.html" with proposal=change %}
-              {% elif change.proposed_by_id == user.id %}
+              {% else %}
+              <div class="text-muted fst-italic">Waiting for the organizer to approve</div>
+              {% endif %}
+              {% if not is_organizer and change.proposed_by_id == user.id %}
               <form method="post" action="{% url 'proposal_withdraw' trip.pk change.pk %}">{% csrf_token %}
                 <button class="btn btn-link btn-sm p-0 text-secondary" type="submit">Withdraw my suggestion</button>
               </form>
